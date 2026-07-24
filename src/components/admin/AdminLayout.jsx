@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import { useAccess, isPlatformAdmin, isOwner } from '@/lib/accessService';
-import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity } from 'lucide-react';
+import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline } from 'lucide-react';
 
 const NAV = [
   { to: '/admin/users', label: 'Users', icon: Users, perm: null },
@@ -12,6 +12,10 @@ const NAV = [
   { to: '/admin/connectors', label: 'Connectors', icon: Plug, perm: null },
   { to: '/admin/imports', label: 'Import History', icon: History, perm: null },
   { to: '/admin/sync', label: 'Sync Status', icon: Activity, perm: null },
+  { to: '/admin/reconciliation', label: 'Reconciliation', icon: GitCompareArrows, perm: null },
+  { to: '/admin/exceptions', label: 'Exceptions', icon: AlertTriangle, perm: null },
+  { to: '/admin/account-mapping', label: 'Account Mapping', icon: BookMarked, perm: null },
+  { to: '/admin/source-mapping', label: 'Source Mapping', icon: Spline, perm: null },
 ];
 
 export default function AdminLayout() {

@@ -17,6 +17,10 @@ import AdminSecurity from '@/pages/admin/SecurityStatus';
 import AdminConnectors from '@/pages/admin/Connectors';
 import AdminImports from '@/pages/admin/ImportHistory';
 import AdminSync from '@/pages/admin/SyncStatus';
+import AdminReconciliation from '@/pages/admin/ReconciliationQueue';
+import AdminExceptions from '@/pages/admin/Exceptions';
+import AdminAccountMapping from '@/pages/admin/AccountMapping';
+import AdminSourceMapping from '@/pages/admin/SourceMapping';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -55,6 +59,10 @@ const AuthenticatedApp = () => {
         <Route path="/admin/connectors" element={<AdminConnectors />} />
         <Route path="/admin/imports" element={<AdminImports />} />
         <Route path="/admin/sync" element={<AdminSync />} />
+        <Route path="/admin/reconciliation" element={<AdminReconciliation />} />
+        <Route path="/admin/exceptions" element={<AdminExceptions />} />
+        <Route path="/admin/account-mapping" element={<AdminAccountMapping />} />
+        <Route path="/admin/source-mapping" element={<AdminSourceMapping />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
