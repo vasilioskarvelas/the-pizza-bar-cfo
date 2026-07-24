@@ -1,17 +1,18 @@
-// Phase 01 foundation metadata — describes the schema, zones, RLS patterns,
-// tests and platform limitations. This is descriptive configuration, not
-// financial data.
+// HFOS ERD v1.0 (LOCKED) + Addendum 001 — foundation metadata.
+// Describes the locked schema (42 entities), logical zones, RLS patterns,
+// verification status, platform limitations, and the Addendum 001 Version 1
+// build order (§7.1). Descriptive configuration only — no financial data.
 
 export const ZONES = [
   {
     name: 'source',
-    description: 'Immutable, append-only raw ingestion records. Raw payload retained verbatim. Corrections are superseding records, never edits.',
-    entities: ['SourceRecord'],
+    description: 'Immutable, append-only raw ingestion: Connector → ConnectorRun → ImportBatch → SourceRecord → ImportError. Raw payload retained verbatim; corrections are superseding records, never edits.',
+    entities: ['Connector', 'ConnectorRun', 'ImportBatch', 'SourceRecord', 'ImportError'],
   },
   {
     name: 'canonical',
-    description: 'The reconciled system truth — built from source data plus user-entered records. This zone grows as later phases populate it.',
-    entities: ['ManualCommitment', 'CommitmentVersion', 'CommitmentSourceLink', 'CommitmentDuplicateCandidate'],
+    description: 'The reconciled system truth — commitments, deterministic calculation outputs with full lineage, and reconciliation runs/exceptions.',
+    entities: ['ManualCommitment', 'CommitmentVersion', 'CommitmentSourceLink', 'CommitmentDuplicateCandidate', 'CalculationRun', 'CalculationResult', 'CalculationLineage', 'ReconciliationRun', 'ReconciliationException'],
   },
   {
     name: 'mart',
@@ -20,12 +21,12 @@ export const ZONES = [
   },
   {
     name: 'audit',
-    description: 'Immutable, append-only audit log. Write-only to application users; read restricted to admins. Hash-chain fields present.',
-    entities: ['AuditLog'],
+    description: 'Immutable, append-only event and audit streams. Write-only to application users; read restricted to admins.',
+    entities: ['SystemEvent', 'AuditLog'],
   },
   {
     name: 'configuration',
-    description: 'Structural and reference data — tenant structure, chart of accounts, tax rates, KPI definitions, methodology, and governance rules.',
+    description: 'Structural, reference, identity, delivery, and governance data — tenant structure, identity/RBAC, chart of accounts, tax rates, KPI definitions, methodology, notifications, feature flags, and governance rules.',
     entities: [
       'Organisation', 'Site', 'SiteGroup', 'SiteGroupMembership',
       'UserProfile', 'Role', 'Permission', 'RolePermission',
@@ -34,6 +35,7 @@ export const ZONES = [
       'KPIDefinition', 'KPIThresholdVersion',
       'ScoreMethodologyVersion', 'ScoreMethodologyComponent', 'ScoreMethodologyInput',
       'ApproximationRegister', 'SourceAuthorityRule', 'MaterialityRule', 'DataFreshnessRule',
+      'Notification', 'FeatureFlag',
     ],
   },
 ];
@@ -46,17 +48,17 @@ export const RLS_PATTERNS = [
   },
   {
     name: 'ORG+SITE',
-    description: 'Read/create/update scoped to organisation AND (admin OR site_id in user.site_ids). Admin-only delete.',
-    entities: ['Site', 'SiteGroupMembership', 'CostCentre', 'UserSiteAccess'],
+    description: 'Read/create/update scoped to organisation AND (admin OR site_id in user.site_ids OR site_id null). Admin-only delete.',
+    entities: ['Site', 'SiteGroupMembership', 'CostCentre', 'UserSiteAccess', 'Connector', 'ConnectorRun', 'ImportBatch', 'CalculationRun', 'ReconciliationRun', 'ReconciliationException', 'FeatureFlag'],
   },
   {
     name: 'IMMUTABLE',
-    description: 'Read scoped to org/site; admin-only create; update and update denied to ALL app users (false). Only the service role (ingestion) writes.',
-    entities: ['SourceRecord', 'CommitmentVersion', 'CommitmentSourceLink'],
+    description: 'Read scoped to org/site; admin-only create; update and delete denied to ALL app users (false). Only the service role (ingestion/engine) writes.',
+    entities: ['SourceRecord', 'ImportError', 'CommitmentVersion', 'CommitmentSourceLink', 'CalculationResult', 'CalculationLineage'],
   },
   {
     name: 'COMMITMENT',
-    description: 'Read scoped to org AND (admin OR shared scope OR site_id in user.site_ids). Admin-only delete. Supports soft-delete via deleted_at.',
+    description: 'Read scoped to org AND (admin OR shared scope OR site_id in user.site_ids). Admin-only delete. Soft-delete via deleted_at on ManualCommitment.',
     entities: ['ManualCommitment', 'CommitmentDuplicateCandidate'],
   },
   {
@@ -65,71 +67,73 @@ export const RLS_PATTERNS = [
     entities: ['AuditLog'],
   },
   {
-    name: 'IDENTITY',
-    description: 'User can read their own profile/org-role records; admins manage all. Built-in User entity governed by platform permissions (no custom RLS applied).',
-    entities: ['UserProfile', 'UserOrganisationRole'],
+    name: 'SYSTEM-EVENT',
+    description: 'Organisation-scoped read; create/update/delete denied to ALL app users (false). Free-string namespaced event_key. Only the service role publishes events.',
+    entities: ['SystemEvent'],
   },
   {
-    name: 'LOCKED (prototype)',
-    description: 'Admin read-only, all writes denied. Unapproved prototype schemas retained for reference but disabled and inaccessible to regular users.',
-    entities: ['SalesTransaction', 'SupplierInvoice', 'PayRun', 'BankAccount', 'TaxObligation', 'Anomaly'],
+    name: 'IDENTITY',
+    description: 'User reads their own profile/org-role records; admins manage all. UserSiteAccess is canonical; User.site_ids[] is a synchronised RLS cache only.',
+    entities: ['UserProfile', 'UserOrganisationRole', 'UserSiteAccess'],
+  },
+  {
+    name: 'NOTIFICATION',
+    description: 'Delivery artefact derived from a SystemEvent. User reads own notifications; admins read all. Admin-only create/delete.',
+    entities: ['Notification'],
   },
 ];
 
 export const TESTS = [
-  { id: 'T1', name: 'Strathmore-only user cannot access Diggers Rest data', category: 'Tenant isolation', status: 'rule_in_place', detail: 'ORG+SITE RLS filters site_id against user.data.site_ids. Runtime verification requires provisioned users (auth phase).' },
-  { id: 'T2', name: 'Diggers Rest-only user cannot access Strathmore data', category: 'Tenant isolation', status: 'rule_in_place', detail: 'Same ORG+SITE pattern; site_id not in user.site_ids yields no records.' },
-  { id: 'T3', name: 'User from another organisation cannot access The Pizza Bar', category: 'Tenant isolation', status: 'rule_in_place', detail: 'Every entity filters data.organisation_id == user.data.organisation_id. Cross-org user sees nothing.' },
-  { id: 'T4', name: 'Site manager cannot access audit data', category: 'Role restriction', status: 'rule_in_place', detail: 'AuditLog read requires user_condition role=admin. Non-admin site users are denied.' },
-  { id: 'T5', name: 'Normal user cannot update source records', category: 'Immutability', status: 'enforced', detail: 'SourceRecord update = false (deny-all). Service role bypasses RLS for ingestion.' },
-  { id: 'T6', name: 'Normal user cannot delete source records', category: 'Immutability', status: 'enforced', detail: 'SourceRecord delete = false (deny-all).' },
-  { id: 'T7', name: 'Normal user cannot update audit records', category: 'Immutability', status: 'enforced', detail: 'AuditLog update = false (deny-all).' },
-  { id: 'T8', name: 'Normal user cannot delete audit records', category: 'Immutability', status: 'enforced', detail: 'AuditLog delete = false (deny-all).' },
-  { id: 'T9', name: 'Soft-deleted mutable records remain auditable', category: 'Audit', status: 'partial', detail: 'ManualCommitment supports deleted_at/deleted_by/deletion_reason. Automatic audit-on-delete requires a logging mechanism — see platform limitations.' },
-  { id: 'T10', name: 'Every tested write creates an audit record', category: 'Audit', status: 'not_implemented', detail: 'Base44 has no database triggers. Audit-on-write requires backend-function wrappers or middleware — documented limitation.' },
+  { id: 'T1', name: 'Strathmore-only user cannot access Diggers Rest data', category: 'Tenant isolation', status: 'rule_in_place', detail: 'ORG+SITE RLS filters site_id against user.data.site_ids; null site_id records visible org-wide. Runtime verification requires provisioned users (Phase 02 auth).' },
+  { id: 'T2', name: 'User from another organisation cannot access The Pizza Bar', category: 'Tenant isolation', status: 'rule_in_place', detail: 'Every entity filters data.organisation_id == user.data.organisation_id.' },
+  { id: 'T3', name: 'Site manager cannot read audit data', category: 'Role restriction', status: 'rule_in_place', detail: 'AuditLog read requires user_condition role=admin.' },
+  { id: 'T4', name: 'Immutable entities reject application updates', category: 'Immutability', status: 'enforced', detail: 'update=false on SourceRecord, ImportError, CommitmentVersion, CommitmentSourceLink, CalculationResult, CalculationLineage.' },
+  { id: 'T5', name: 'Immutable entities reject application deletes', category: 'Immutability', status: 'enforced', detail: 'delete=false on the same set.' },
+  { id: 'T6', name: 'AuditLog rejects application writes', category: 'Audit', status: 'enforced', detail: 'create/update/delete=false; service role only.' },
+  { id: 'T7', name: 'SystemEvent rejects application writes', category: 'Audit', status: 'enforced', detail: 'create/update/delete=false; service role publishes via event_key.' },
+  { id: 'T8', name: 'User reads only own notifications unless admin', category: 'Notification', status: 'rule_in_place', detail: 'read: org AND (admin OR data.user_id == user.id).' },
+  { id: 'T9', name: 'User.site_ids[] is only the RLS cache', category: 'Identity', status: 'rule_in_place', detail: 'UserSiteAccess is canonical; User.site_ids[] is denormalised with site_ids_synced_at. Sync is application-layer (deferred).' },
+  { id: 'T10', name: 'Foreign-key & unique-constraint enforcement', category: 'Referential integrity', status: 'not_implemented', detail: 'Base44 has no DB-level FK/UQ. Application-layer validation module is a deferred implementation item (ERD-documented).' },
+  { id: 'T11', name: 'Audit-on-write hash chain', category: 'Audit', status: 'not_implemented', detail: 'AuditLog hash-chain fields present; population requires backend-function wrappers (no DB triggers). Deferred.' },
 ];
 
 export const LIMITATIONS = [
-  {
-    title: 'No physical PostgreSQL schemas (zones)',
-    detail: 'Base44 does not expose physical database schemas. The five logical zones (source, canonical, mart, audit, configuration) are implemented as an explicit naming and metadata convention — each entity carries a zone designation and is grouped accordingly. The separation is logical, not a physical schema boundary.',
-  },
-  {
-    title: 'No database-level immutability enforcement',
-    detail: 'PostgreSQL REVOKE UPDATE, DELETE is not available. Immutability is enforced via RLS (update/delete = false) at the application access layer. The service role (backend functions) retains write capability for ingestion. This is application-layer immutability, not database-layer.',
-  },
-  {
-    title: 'No database triggers for audit-on-write',
-    detail: 'Automatic audit logging on every create/update/delete requires database triggers or ORM middleware, neither of which Base44 provides. The AuditLog entity and hash-chain fields exist, but populating it on every write requires backend-function wrappers around entity operations. This is a deferred implementation item.',
-  },
-  {
-    title: 'Hash chaining is application-level, not tamper-evident at DB layer',
-    detail: 'previous_hash, record_hash and chain_position fields are present on AuditLog. Computing them requires application code (backend function), not a DB-level computed column. Without DB-level enforcement, a determined attacker with service-role access could rewrite the chain. This is weaker than the architecture specifies and must not be claimed as tamper-evident.',
-  },
-  {
-    title: 'No enforced foreign-key constraints',
-    detail: 'Base44 entities are schemaless JSON documents. Referential integrity (e.g. site_id must exist in Site) is not enforced at the database layer. It must be validated in application code. Orphan records are possible if application logic is defective.',
-  },
-  {
-    title: 'Money stored as JSON number, not NUMERIC(15,4)',
-    detail: 'Base44 number fields are not PostgreSQL NUMERIC. The application layer must use integer cents or careful decimal handling to avoid floating-point drift. Currency is an explicit field on monetary entities.',
-  },
-  {
-    title: 'Fine-grained roles limited to admin/user at RLS layer',
-    detail: 'RLS user_condition checks only the built-in role (admin/user). Granular roles (owner, finance_manager, site_manager, auditor) are stored on UserProfile.system_role and User.data.system_role, but RLS cannot evaluate them directly. Site-level scoping uses user.data.site_ids (array). Full role enforcement beyond admin/user requires application-layer checks.',
-  },
-  {
-    title: 'Built-in User entity cannot receive custom RLS',
-    detail: 'The platform governs User with its own permissions. Custom fields (organisation_id, site_ids, system_role) were added to the schema and are accessible via {{user.data.*}}, but the User entity itself has no entity-level RLS.',
-  },
-  {
-    title: 'User records are invite-only (cannot be seeded)',
-    detail: 'User records cannot be created via the API (invite-only). Cross-user RLS runtime tests therefore require provisioned users and cannot be executed in this phase via the service-role sandbox.',
-  },
+  { title: 'No physical PostgreSQL schemas (zones)', detail: 'Base44 exposes no physical database schemas. The five logical zones are an explicit naming/metadata convention — logical separation, not a physical boundary.' },
+  { title: 'No database-level immutability enforcement', detail: 'Immutability is enforced via RLS (update/delete = false) at the application access layer. The service role retains write capability for ingestion/engine.' },
+  { title: 'No database triggers for audit-on-write', detail: 'Automatic audit logging requires DB triggers or ORM middleware, neither available. AuditLog + hash-chain fields exist; population requires backend-function wrappers. Deferred.' },
+  { title: 'No enforced foreign-key or unique constraints', detail: 'Base44 entities are schemaless JSON documents. Referential integrity and uniqueness must be validated in application code.' },
+  { title: 'Money stored as JSON number, not NUMERIC(15,4)', detail: 'Application layer must use integer cents or careful decimal handling to avoid floating-point drift. Currency is an explicit field on monetary entities.' },
+  { title: 'Fine-grained roles limited to admin/user at RLS layer', detail: 'RLS user_condition checks only the built-in role. Granular roles live on UserProfile.system_role; RLS cannot evaluate them directly. Full role enforcement beyond admin/user requires application-layer checks.' },
+  { title: 'Built-in User entity cannot receive custom RLS', detail: 'Platform governs User with its own permissions. Custom fields (organisation_id, site_ids, system_role) are accessible via {{user.data.*}}, but User has no entity-level RLS.' },
+  { title: 'User records are invite-only (cannot be seeded)', detail: 'User records cannot be created via the API. Cross-user RLS runtime tests therefore require provisioned users and cannot run via the service-role sandbox.' },
 ];
 
 export const NOT_IMPLEMENTED = [
-  'Dashboard', 'Owner Score calculation', 'Daily Brief', 'Financial Timeline interface',
-  'Xero integration', 'POS integration', 'Financial calculations', 'Reports',
-  'AI summaries', 'AI Chat', 'Forecasting', 'Anomaly detection', 'Sample financial data',
+  'Authentication, roles, MFA (§7.1 item 2)',
+  'Xero connector & immutable raw ingestion (item 3)',
+  'Canonical model & reconciliation (item 4)',
+  'Deterministic financial & tax engine (item 5)',
+  'Owner Score calculation (item 6)',
+  'Executive dashboard & Daily Owner Brief (item 7)',
+  'Financial Timeline (item 8)',
+  'Weekly report (item 9)',
+  'Numeric validator & permission-filtered AI context (item 10)',
+  'AI fixed-format summary (item 11)',
+  'AI Financial Chat (item 12 — §4.1 eight-gate release condition)',
+];
+
+// Addendum 001 — Version 1 build order (§7.1). Item 1 complete; items 2-12 pending.
+export const BUILD_ORDER = [
+  { id: 1, component: 'Schema, RLS, audit log', state: 'complete', dependsOn: '—' },
+  { id: 2, component: 'Authentication, roles, MFA', state: 'next', dependsOn: '1' },
+  { id: 3, component: 'Xero connector & immutable raw ingestion', state: 'pending', dependsOn: '1' },
+  { id: 4, component: 'Canonical model & reconciliation', state: 'pending', dependsOn: '3' },
+  { id: 5, component: 'Deterministic financial & tax engine', state: 'pending', dependsOn: '4' },
+  { id: 6, component: 'Owner Score calculation', state: 'pending', dependsOn: '5' },
+  { id: 7, component: 'Executive dashboard & Daily Owner Brief', state: 'pending', dependsOn: '6' },
+  { id: 8, component: 'Financial Timeline', state: 'pending', dependsOn: '5' },
+  { id: 9, component: 'Weekly report', state: 'pending', dependsOn: '5' },
+  { id: 10, component: 'Numeric validator & permission-filtered AI context', state: 'pending', dependsOn: '5, 2' },
+  { id: 11, component: 'AI fixed-format summary', state: 'pending', dependsOn: '10' },
+  { id: 12, component: 'AI Financial Chat', state: 'gated', dependsOn: '11 + §4.1 eight-gate release' },
 ];
