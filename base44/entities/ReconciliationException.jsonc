@@ -1,0 +1,143 @@
+{
+  "name": "ReconciliationException",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "reconciliation_run_id": {
+      "type": "string"
+    },
+    "exception_type": {
+      "type": "string",
+      "enum": [
+        "missing",
+        "duplicate",
+        "amount_mismatch",
+        "unmatched",
+        "stale",
+        "broken_link"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ],
+      "default": "warning"
+    },
+    "entity_type": {
+      "type": "string"
+    },
+    "source_record_id": {
+      "type": "string"
+    },
+    "expected_value": {
+      "type": "string"
+    },
+    "actual_value": {
+      "type": "string"
+    },
+    "difference": {
+      "type": "number"
+    },
+    "description": {
+      "type": "string"
+    },
+    "resolved": {
+      "type": "boolean",
+      "default": false
+    },
+    "resolved_by": {
+      "type": "string"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolution_note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "reconciliation_run_id",
+    "exception_type"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

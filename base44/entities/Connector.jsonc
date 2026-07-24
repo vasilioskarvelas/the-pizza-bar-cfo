@@ -1,0 +1,149 @@
+{
+  "name": "Connector",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "source_system": {
+      "type": "string",
+      "enum": [
+        "pos",
+        "xero",
+        "payroll",
+        "banking",
+        "supplier_invoice",
+        "rostering",
+        "delivery",
+        "manual"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "connector_type": {
+      "type": "string",
+      "enum": [
+        "oauth",
+        "api_key",
+        "manual",
+        "webhook"
+      ]
+    },
+    "auth_ref": {
+      "type": "string"
+    },
+    "schedule_cron": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "disabled",
+        "error"
+      ],
+      "default": "active"
+    },
+    "last_run_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_run_status": {
+      "type": "string"
+    },
+    "config": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "source_system",
+    "name",
+    "connector_type"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

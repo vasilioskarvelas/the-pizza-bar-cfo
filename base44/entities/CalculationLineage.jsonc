@@ -1,0 +1,88 @@
+{
+  "name": "CalculationLineage",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "calculation_result_id": {
+      "type": "string"
+    },
+    "input_type": {
+      "type": "string",
+      "enum": [
+        "source_record",
+        "calculation_result",
+        "manual_commitment",
+        "configuration"
+      ]
+    },
+    "input_record_id": {
+      "type": "string"
+    },
+    "input_calculation_result_id": {
+      "type": "string"
+    },
+    "input_source_record_id": {
+      "type": "string"
+    },
+    "input_commitment_id": {
+      "type": "string"
+    },
+    "field_path": {
+      "type": "string"
+    },
+    "weight": {
+      "type": "number"
+    },
+    "sort_order": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "calculation_result_id",
+    "input_type",
+    "input_record_id"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": false,
+    "delete": false
+  }
+}
