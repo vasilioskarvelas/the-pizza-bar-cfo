@@ -1,0 +1,33 @@
+{
+  "name": "BankAccount",
+  "type": "object",
+  "properties": {
+    "account_name": {
+      "type": "string"
+    },
+    "bank": {
+      "type": "string"
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "operating",
+        "tax_reserve",
+        "savings",
+        "investment"
+      ],
+      "default": "operating"
+    },
+    "balance": {
+      "type": "number"
+    },
+    "last_four": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "account_name",
+    "account_type",
+    "balance"
+  ]
+}

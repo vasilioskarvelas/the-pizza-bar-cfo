@@ -1,0 +1,55 @@
+{
+  "name": "TaxObligation",
+  "type": "object",
+  "properties": {
+    "obligation_type": {
+      "type": "string",
+      "enum": [
+        "GST",
+        "PAYG_withholding",
+        "PAYG_instalment",
+        "super_guarantee",
+        "payroll_tax",
+        "company_tax"
+      ]
+    },
+    "period_label": {
+      "type": "string"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "funded_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "accruing",
+        "due",
+        "funded",
+        "paid",
+        "overdue"
+      ],
+      "default": "accruing"
+    }
+  },
+  "required": [
+    "obligation_type",
+    "due_date",
+    "amount"
+  ]
+}
