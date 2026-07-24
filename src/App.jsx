@@ -14,6 +14,9 @@ import AdminRoles from '@/pages/admin/Roles';
 import AdminPermissions from '@/pages/admin/Permissions';
 import AdminSiteAccess from '@/pages/admin/SiteAccess';
 import AdminSecurity from '@/pages/admin/SecurityStatus';
+import AdminConnectors from '@/pages/admin/Connectors';
+import AdminImports from '@/pages/admin/ImportHistory';
+import AdminSync from '@/pages/admin/SyncStatus';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -49,6 +52,9 @@ const AuthenticatedApp = () => {
         <Route path="/admin/permissions" element={<AdminPermissions />} />
         <Route path="/admin/site-access" element={<AdminSiteAccess />} />
         <Route path="/admin/security" element={<AdminSecurity />} />
+        <Route path="/admin/connectors" element={<AdminConnectors />} />
+        <Route path="/admin/imports" element={<AdminImports />} />
+        <Route path="/admin/sync" element={<AdminSync />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

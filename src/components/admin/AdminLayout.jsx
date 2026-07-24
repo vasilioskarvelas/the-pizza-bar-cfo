@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import { useAccess, isPlatformAdmin, isOwner } from '@/lib/accessService';
-import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft } from 'lucide-react';
+import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity } from 'lucide-react';
 
 const NAV = [
   { to: '/admin/users', label: 'Users', icon: Users, perm: null },
@@ -9,6 +9,9 @@ const NAV = [
   { to: '/admin/permissions', label: 'Permissions', icon: Lock, perm: null },
   { to: '/admin/site-access', label: 'Site Access', icon: Building2, perm: null },
   { to: '/admin/security', label: 'Security Status', icon: ScrollText, perm: 'audit.read' },
+  { to: '/admin/connectors', label: 'Connectors', icon: Plug, perm: null },
+  { to: '/admin/imports', label: 'Import History', icon: History, perm: null },
+  { to: '/admin/sync', label: 'Sync Status', icon: Activity, perm: null },
 ];
 
 export default function AdminLayout() {
