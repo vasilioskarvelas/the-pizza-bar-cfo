@@ -8,6 +8,9 @@
     "site_id": {
       "type": "string"
     },
+    "import_batch_id": {
+      "type": "string"
+    },
     "zone": {
       "type": "string",
       "default": "source"
@@ -70,6 +73,7 @@
   },
   "required": [
     "organisation_id",
+    "import_batch_id",
     "source_system",
     "external_entity_type",
     "external_record_id",
@@ -87,6 +91,9 @@
               "user_condition": {
                 "role": "admin"
               }
+            },
+            {
+              "data.site_id": null
             },
             {
               "data.site_id": {
