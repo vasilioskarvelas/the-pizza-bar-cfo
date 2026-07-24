@@ -34,6 +34,23 @@ export async function writeAudit(base44, { orgId, actionType, entityType, entity
   });
 }
 
+// Resolve caller context for backend functions. Returns { orgId, actorUserId, isAdmin, isScheduled }.
+// Admin users run on their own org; scheduled/platform calls must pass orgId explicitly.
+export async function resolveActor(base44, body) {
+  const user = await base44.auth.me().catch(() => null);
+  if (user) {
+    const d = user.data || {};
+    const orgId = body.organisation_id || d.organisation_id || user.organisation_id;
+    const systemRole = d.system_role || user.system_role;
+    const isAdmin = user.role === "admin" || systemRole === "owner" || systemRole === "system";
+    if (!orgId || !isAdmin) return { forbidden: true };
+    return { orgId, actorUserId: user.id, isAdmin, isScheduled: false };
+  }
+  // platform / scheduled invocation — must supply orgId
+  if (body.organisation_id) return { orgId: body.organisation_id, actorUserId: "system", isAdmin: true, isScheduled: true };
+  return { unauthorized: true };
+}
+
 // Canonical site-cache sync: reads ACTIVE UserSiteAccess, rebuilds User.site_ids[],
 // updates site_ids_synced_at, publishes a SystemEvent + AuditLog. This is the ONLY
 // path that writes User.site_ids[] — frontend never edits it directly.
