@@ -93,23 +93,38 @@ export function dateDiffDays(d1, d2) {
 // Returns per-A classifications: matched | partially_matched | unmatched | duplicate | exception.
 export function reconcileSets(txsA, txsB, tolerance) {
   const tol = { ...DEFAULT_TOLERANCE, ...tolerance };
+  // A partial amount match requires the amounts to be CLOSE (within partial_amount_pct,
+  // default 5%) — not merely same-date. Wildly different amounts are "unmatched", not
+  // partial. Only exact matches and duplicates consume a B candidate, so an earlier
+  // partial can never steal the exact counterpart of a later record.
+  const partialPct = tol.partial_amount_pct ?? 0.05;
+  const exactAmt = (a, b) => Math.abs((a.value || 0) - (b.value || 0)) <= tol.amount;
+  const closeAmt = (a, b) => {
+    const diff = Math.abs((a.value || 0) - (b.value || 0));
+    const base = Math.max(Math.abs(a.value || 0), Math.abs(b.value || 0), 1);
+    return diff > tol.amount && diff / base <= partialPct;
+  };
+  const sameDate = (a, b) => dateDiffDays(a.period_start, b.period_start) <= tol.date_days;
+
   const out = [];
   const usedB = new Set();
   for (const a of txsA) {
     const acct = labelAccount(a.label);
     const sameAccount = txsB.filter((b) => labelAccount(b.label) === acct && !usedB.has(b.id));
-    const sameAccountCurrency = sameAccount.filter((b) => b.unit === a.unit);
-    const dateClose = sameAccountCurrency.filter((b) => dateDiffDays(a.period_start, b.period_start) <= tol.date_days);
-    const amtMatch = dateClose.filter((b) => Math.abs((a.value || 0) - (b.value || 0)) <= tol.amount);
+    const sameCurrency = sameAccount.filter((b) => b.unit === a.unit);
 
-    let status = "unmatched", match = null, reason = null;
-    if (amtMatch.length === 1) { status = "matched"; match = amtMatch[0]; usedB.add(match.id); }
-    else if (amtMatch.length > 1) { status = "duplicate"; match = amtMatch[0]; usedB.add(match.id); reason = `${amtMatch.length} amount-matching candidates`; }
-    // Partial / currency mismatches do NOT consume — only exact matches and
-    // duplicates consume a B candidate, so an earlier partial can never steal the
-    // exact counterpart of a later record.
-    else if (dateClose.length >= 1) { status = "partially_matched"; match = dateClose[0]; reason = "amount_mismatch"; }
-    else if (sameAccountCurrency.length >= 1) { status = "partially_matched"; match = sameAccountCurrency[0]; reason = "date_mismatch"; }
+    const exact = sameCurrency.filter((b) => sameDate(a, b) && exactAmt(a, b));
+    const sameAmtDiffDate = sameCurrency.filter((b) => !sameDate(a, b) && exactAmt(a, b));
+    const closeSameDate = sameCurrency.filter((b) => sameDate(a, b) && closeAmt(a, b));
+    const closeDiffDate = sameCurrency.filter((b) => !sameDate(a, b) && closeAmt(a, b));
+
+    let status = "unmatched", match = null, reason = "no_counterpart";
+    if (exact.length === 1) { status = "matched"; match = exact[0]; usedB.add(match.id); }
+    else if (exact.length > 1) { status = "duplicate"; match = exact[0]; usedB.add(match.id); reason = `${exact.length} exact candidates`; }
+    else if (sameAmtDiffDate.length >= 1) { status = "partially_matched"; match = sameAmtDiffDate[0]; reason = "date_mismatch"; }
+    else if (closeSameDate.length >= 1) { status = "partially_matched"; match = closeSameDate[0]; reason = "amount_mismatch"; }
+    else if (closeDiffDate.length >= 1) { status = "partially_matched"; match = closeDiffDate[0]; reason = "amount_mismatch"; }
+    else if (sameCurrency.length >= 1) { status = "unmatched"; match = sameCurrency[0]; reason = "amount_out_of_tolerance"; }
     else if (sameAccount.length >= 1) { status = "exception"; match = sameAccount[0]; reason = "currency_mismatch"; }
 
     out.push({ a, status, match, reason });
