@@ -42,6 +42,23 @@ const ENTITY_LIST = [
   { name: 'ExecutiveAlert', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
   { name: 'AlertRule', zone: 'configuration', pattern: 'ORG', immutable: false },
   { name: 'DashboardWidget', zone: 'configuration', pattern: 'IDENTITY', immutable: false },
+  // configuration — Phase 08 forecast & scenario engine
+  { name: 'Scenario', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
+  { name: 'ForecastAssumption', zone: 'configuration', pattern: 'ORG', immutable: false },
+  { name: 'FutureObligation', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
+  { name: 'ForecastResult', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
+  // configuration — Phase 09 executive planning
+  { name: 'ExecutiveGoal', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
+  { name: 'Initiative', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
+  { name: 'ExecutiveDecision', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
+  { name: 'ExecutiveRisk', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
+  { name: 'Opportunity', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
+  { name: 'GoalCategory', zone: 'configuration', pattern: 'ORG', immutable: false },
+  { name: 'InitiativeTemplate', zone: 'configuration', pattern: 'ORG', immutable: false },
+  { name: 'ExecutiveReportTemplate', zone: 'configuration', pattern: 'ORG', immutable: false },
+  { name: 'RiskRule', zone: 'configuration', pattern: 'ORG', immutable: false },
+  { name: 'OpportunityRule', zone: 'configuration', pattern: 'ORG', immutable: false },
+  { name: 'ExecutiveDashboardSetting', zone: 'configuration', pattern: 'ORG', immutable: false },
   // source — ingestion
   { name: 'Connector', zone: 'source', pattern: 'ORG+SITE', immutable: false },
   { name: 'ConnectorRun', zone: 'source', pattern: 'ORG+SITE', immutable: false },
@@ -217,7 +234,7 @@ export default function Foundation() {
         </Section>
 
         <footer className="text-center py-6 mt-4 border-t border-zinc-900">
-          <p className="text-xs text-zinc-700">Phase 01 verified · Phase 02 (auth, roles, MFA) verified · Phase 03 (Xero connector & immutable raw ingestion) verified · Phase 04 (canonical model & reconciliation) verified · Phase 05 (deterministic financial &amp; tax engine) verified · Phase 06 (Owner Score calculation engine) verified · Phase 07 (Executive dashboard &amp; Daily Owner Brief) verified. Next: item 8 — Financial Timeline.</p>
+          <p className="text-xs text-zinc-700">Phase 01 verified · Phase 02 (auth, roles, MFA) verified · Phase 03 (Xero connector & immutable raw ingestion) verified · Phase 04 (canonical model & reconciliation) verified · Phase 05 (deterministic financial &amp; tax engine) verified · Phase 06 (Owner Score calculation engine) verified · Phase 07 (Executive dashboard &amp; Daily Owner Brief) verified · Phase 08 (Financial Timeline, Forecasting &amp; Scenario Engine) verified · Phase 09 (Executive Planning, Goals &amp; Strategic Decision Centre) verified. Next: Phase 10 — Weekly report.</p>
         </footer>
       </div>
     </div>
