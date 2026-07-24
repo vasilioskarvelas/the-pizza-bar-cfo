@@ -1,54 +1,55 @@
 {
-  "name": "Site",
+  "name": "CommitmentDuplicateCandidate",
   "type": "object",
   "properties": {
     "organisation_id": {
       "type": "string"
     },
-    "name": {
+    "site_id": {
       "type": "string"
     },
-    "suburb": {
-      "type": "string"
-    },
-    "address": {
-      "type": "string"
-    },
-    "abn": {
-      "type": "string"
-    },
-    "timezone": {
+    "scope": {
       "type": "string",
-      "default": "Australia/Melbourne"
+      "enum": [
+        "site",
+        "shared"
+      ],
+      "default": "site"
     },
-    "business_day_boundary": {
-      "type": "string",
-      "default": "04:00"
+    "commitment_id_a": {
+      "type": "string"
+    },
+    "commitment_id_b": {
+      "type": "string"
+    },
+    "similarity_score": {
+      "type": "number"
     },
     "status": {
       "type": "string",
       "enum": [
-        "active",
-        "closed",
-        "opening"
+        "open",
+        "resolved_duplicate",
+        "resolved_not_duplicate",
+        "dismissed"
       ],
-      "default": "active"
+      "default": "open"
     },
-    "opening_date": {
+    "resolved_by": {
+      "type": "string"
+    },
+    "resolved_at": {
       "type": "string",
-      "format": "date"
+      "format": "date-time"
     },
-    "floor_area_sqm": {
-      "type": "number"
-    },
-    "trading_days_per_week": {
-      "type": "number",
-      "default": 7
+    "resolution_note": {
+      "type": "string"
     }
   },
   "required": [
     "organisation_id",
-    "name"
+    "commitment_id_a",
+    "commitment_id_b"
   ],
   "rls": {
     "read": {
@@ -64,7 +65,10 @@
               }
             },
             {
-              "id": {
+              "data.scope": "shared"
+            },
+            {
+              "data.site_id": {
                 "$in": "{{user.data.site_ids}}"
               }
             }
@@ -78,9 +82,18 @@
           "data.organisation_id": "{{user.data.organisation_id}}"
         },
         {
-          "user_condition": {
-            "role": "admin"
-          }
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
         }
       ]
     },
@@ -90,9 +103,18 @@
           "data.organisation_id": "{{user.data.organisation_id}}"
         },
         {
-          "user_condition": {
-            "role": "admin"
-          }
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
         }
       ]
     },

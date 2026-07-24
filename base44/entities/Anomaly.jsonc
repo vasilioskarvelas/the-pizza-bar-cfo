@@ -57,5 +57,15 @@
     "anomaly_type",
     "severity",
     "detected_date"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
 }

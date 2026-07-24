@@ -1,0 +1,113 @@
+{
+  "name": "CommitmentVersion",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "commitment_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "site",
+        "shared"
+      ],
+      "default": "site"
+    },
+    "version": {
+      "type": "number"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "AUD"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "confirmed",
+        "estimated",
+        "forecast"
+      ]
+    },
+    "status": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "changed_by": {
+      "type": "string"
+    },
+    "changed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "commitment_id",
+    "version",
+    "amount"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.scope": "shared"
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "update": false,
+    "delete": false
+  }
+}

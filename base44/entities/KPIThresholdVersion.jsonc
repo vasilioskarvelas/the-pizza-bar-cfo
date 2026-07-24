@@ -1,76 +1,50 @@
 {
-  "name": "Site",
+  "name": "KPIThresholdVersion",
   "type": "object",
   "properties": {
     "organisation_id": {
       "type": "string"
     },
-    "name": {
+    "kpi_definition_id": {
       "type": "string"
     },
-    "suburb": {
+    "site_id": {
       "type": "string"
     },
-    "address": {
-      "type": "string"
+    "target": {
+      "type": "number"
     },
-    "abn": {
-      "type": "string"
+    "warning": {
+      "type": "number"
     },
-    "timezone": {
-      "type": "string",
-      "default": "Australia/Melbourne"
+    "critical": {
+      "type": "number"
     },
-    "business_day_boundary": {
-      "type": "string",
-      "default": "04:00"
-    },
-    "status": {
-      "type": "string",
-      "enum": [
-        "active",
-        "closed",
-        "opening"
-      ],
-      "default": "active"
-    },
-    "opening_date": {
+    "effective_from": {
       "type": "string",
       "format": "date"
     },
-    "floor_area_sqm": {
-      "type": "number"
+    "effective_to": {
+      "type": "string",
+      "format": "date"
     },
-    "trading_days_per_week": {
+    "version": {
       "type": "number",
-      "default": 7
+      "default": 1
+    },
+    "rationale": {
+      "type": "string"
     }
   },
   "required": [
     "organisation_id",
-    "name"
+    "kpi_definition_id",
+    "target",
+    "effective_from"
   ],
   "rls": {
     "read": {
-      "$and": [
-        {
-          "data.organisation_id": "{{user.data.organisation_id}}"
-        },
-        {
-          "$or": [
-            {
-              "user_condition": {
-                "role": "admin"
-              }
-            },
-            {
-              "id": {
-                "$in": "{{user.data.site_ids}}"
-              }
-            }
-          ]
-        }
-      ]
+      "data.organisation_id": "{{user.data.organisation_id}}"
     },
     "create": {
       "$and": [

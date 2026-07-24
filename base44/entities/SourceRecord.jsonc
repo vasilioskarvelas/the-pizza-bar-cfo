@@ -1,0 +1,115 @@
+{
+  "name": "SourceRecord",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "zone": {
+      "type": "string",
+      "default": "source"
+    },
+    "source_system": {
+      "type": "string",
+      "enum": [
+        "pos",
+        "xero",
+        "payroll",
+        "banking",
+        "supplier_invoice",
+        "manual",
+        "rostering",
+        "delivery"
+      ]
+    },
+    "external_entity_type": {
+      "type": "string"
+    },
+    "external_record_id": {
+      "type": "string"
+    },
+    "idempotency_key": {
+      "type": "string"
+    },
+    "raw_payload": {
+      "type": "string"
+    },
+    "payload_hash": {
+      "type": "string"
+    },
+    "source_created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ingested_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "connector_version": {
+      "type": "string"
+    },
+    "supersedes_record_id": {
+      "type": "string"
+    },
+    "record_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "superseded",
+        "rejected"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "source_system",
+    "external_entity_type",
+    "external_record_id",
+    "idempotency_key"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": false,
+    "delete": false
+  }
+}

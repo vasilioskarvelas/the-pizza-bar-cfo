@@ -1,54 +1,52 @@
 {
-  "name": "Site",
+  "name": "UserProfile",
   "type": "object",
   "properties": {
     "organisation_id": {
       "type": "string"
     },
-    "name": {
+    "user_id": {
       "type": "string"
     },
-    "suburb": {
+    "user_email": {
       "type": "string"
     },
-    "address": {
+    "display_name": {
       "type": "string"
     },
-    "abn": {
-      "type": "string"
-    },
-    "timezone": {
+    "system_role": {
       "type": "string",
-      "default": "Australia/Melbourne"
+      "enum": [
+        "owner",
+        "finance_manager",
+        "site_manager",
+        "shift_supervisor",
+        "accountant",
+        "auditor",
+        "system"
+      ]
     },
-    "business_day_boundary": {
-      "type": "string",
-      "default": "04:00"
+    "mfa_enrolled": {
+      "type": "boolean",
+      "default": false
     },
     "status": {
       "type": "string",
       "enum": [
         "active",
-        "closed",
-        "opening"
+        "suspended",
+        "offboarded"
       ],
       "default": "active"
     },
-    "opening_date": {
+    "offboarded_at": {
       "type": "string",
-      "format": "date"
-    },
-    "floor_area_sqm": {
-      "type": "number"
-    },
-    "trading_days_per_week": {
-      "type": "number",
-      "default": 7
+      "format": "date-time"
     }
   },
   "required": [
     "organisation_id",
-    "name"
+    "user_id"
   ],
   "rls": {
     "read": {
@@ -64,9 +62,7 @@
               }
             },
             {
-              "id": {
-                "$in": "{{user.data.site_ids}}"
-              }
+              "data.user_id": "{{user.id}}"
             }
           ]
         }
@@ -90,9 +86,16 @@
           "data.organisation_id": "{{user.data.organisation_id}}"
         },
         {
-          "user_condition": {
-            "role": "admin"
-          }
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.user_id": "{{user.id}}"
+            }
+          ]
         }
       ]
     },

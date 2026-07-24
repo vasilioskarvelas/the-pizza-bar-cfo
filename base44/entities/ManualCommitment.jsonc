@@ -1,0 +1,195 @@
+{
+  "name": "ManualCommitment",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "site",
+        "shared"
+      ],
+      "default": "site"
+    },
+    "commitment_class": {
+      "type": "string",
+      "enum": [
+        "rent",
+        "loan_repayment",
+        "tax",
+        "supplier_payment",
+        "wages",
+        "insurance",
+        "utilities",
+        "capital",
+        "other"
+      ]
+    },
+    "counterparty": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string",
+      "default": "AUD"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "confirmed",
+        "estimated",
+        "forecast"
+      ],
+      "default": "estimated"
+    },
+    "consequence_class": {
+      "type": "string",
+      "enum": [
+        "penalty",
+        "service_disruption",
+        "legal",
+        "reputational",
+        "none"
+      ],
+      "default": "none"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "imported",
+        "derived"
+      ],
+      "default": "manual"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "paid",
+        "cancelled",
+        "soft_deleted"
+      ],
+      "default": "pending"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "document_ref": {
+      "type": "string"
+    },
+    "current_version": {
+      "type": "number",
+      "default": 1
+    },
+    "deleted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "deleted_by": {
+      "type": "string"
+    },
+    "deletion_reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "commitment_class",
+    "amount",
+    "currency",
+    "due_date"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.scope": "shared"
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -29,5 +29,15 @@
     "account_name",
     "account_type",
     "balance"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
 }

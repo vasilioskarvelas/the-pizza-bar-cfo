@@ -54,5 +54,15 @@
     "period_start",
     "period_end",
     "gross_wages"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
 }

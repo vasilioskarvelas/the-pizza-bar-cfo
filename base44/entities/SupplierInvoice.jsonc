@@ -53,5 +53,15 @@
     "supplier_name",
     "invoice_date",
     "amount_excl"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
 }

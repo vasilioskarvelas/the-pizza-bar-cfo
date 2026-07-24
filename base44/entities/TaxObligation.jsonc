@@ -51,5 +51,15 @@
     "obligation_type",
     "due_date",
     "amount"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
 }

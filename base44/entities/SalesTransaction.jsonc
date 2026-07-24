@@ -65,5 +65,15 @@
     "site_id",
     "business_date",
     "net_sales"
-  ]
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
 }

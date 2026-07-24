@@ -1,0 +1,101 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "zone": {
+      "type": "string",
+      "default": "audit"
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "create",
+        "update",
+        "delete",
+        "soft_delete",
+        "read_sensitive",
+        "login",
+        "login_failed",
+        "permission_change",
+        "export",
+        "ai_interaction",
+        "audit_read"
+      ]
+    },
+    "entity_type": {
+      "type": "string"
+    },
+    "entity_id": {
+      "type": "string"
+    },
+    "actor_user_id": {
+      "type": "string"
+    },
+    "actor_email": {
+      "type": "string"
+    },
+    "actor_role": {
+      "type": "string"
+    },
+    "before_state": {
+      "type": "string"
+    },
+    "after_state": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "success": {
+      "type": "boolean",
+      "default": true
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "source_ip": {
+      "type": "string"
+    },
+    "user_agent": {
+      "type": "string"
+    },
+    "chain_position": {
+      "type": "number"
+    },
+    "previous_hash": {
+      "type": "string"
+    },
+    "record_hash": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "action_type",
+    "entity_type",
+    "actor_user_id"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}

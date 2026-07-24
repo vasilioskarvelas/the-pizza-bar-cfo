@@ -1,54 +1,29 @@
 {
-  "name": "Site",
+  "name": "UserOrganisationRole",
   "type": "object",
   "properties": {
     "organisation_id": {
       "type": "string"
     },
-    "name": {
+    "user_id": {
       "type": "string"
     },
-    "suburb": {
+    "role_id": {
       "type": "string"
     },
-    "address": {
-      "type": "string"
-    },
-    "abn": {
-      "type": "string"
-    },
-    "timezone": {
-      "type": "string",
-      "default": "Australia/Melbourne"
-    },
-    "business_day_boundary": {
-      "type": "string",
-      "default": "04:00"
-    },
-    "status": {
-      "type": "string",
-      "enum": [
-        "active",
-        "closed",
-        "opening"
-      ],
-      "default": "active"
-    },
-    "opening_date": {
+    "effective_from": {
       "type": "string",
       "format": "date"
     },
-    "floor_area_sqm": {
-      "type": "number"
-    },
-    "trading_days_per_week": {
-      "type": "number",
-      "default": 7
+    "effective_to": {
+      "type": "string",
+      "format": "date"
     }
   },
   "required": [
     "organisation_id",
-    "name"
+    "user_id",
+    "role_id"
   ],
   "rls": {
     "read": {
@@ -64,9 +39,7 @@
               }
             },
             {
-              "id": {
-                "$in": "{{user.data.site_ids}}"
-              }
+              "data.user_id": "{{user.id}}"
             }
           ]
         }

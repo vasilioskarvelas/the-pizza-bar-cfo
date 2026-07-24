@@ -1,76 +1,53 @@
 {
-  "name": "Site",
+  "name": "Account",
   "type": "object",
   "properties": {
     "organisation_id": {
       "type": "string"
     },
+    "code": {
+      "type": "string"
+    },
     "name": {
       "type": "string"
     },
-    "suburb": {
+    "account_type": {
       "type": "string"
     },
-    "address": {
-      "type": "string"
-    },
-    "abn": {
-      "type": "string"
-    },
-    "timezone": {
+    "class": {
       "type": "string",
-      "default": "Australia/Melbourne"
+      "enum": [
+        "revenue",
+        "cogs",
+        "labour",
+        "overhead",
+        "tax",
+        "capital",
+        "asset",
+        "liability",
+        "equity"
+      ]
     },
-    "business_day_boundary": {
-      "type": "string",
-      "default": "04:00"
+    "external_xero_id": {
+      "type": "string"
     },
     "status": {
       "type": "string",
       "enum": [
         "active",
-        "closed",
-        "opening"
+        "archived"
       ],
       "default": "active"
-    },
-    "opening_date": {
-      "type": "string",
-      "format": "date"
-    },
-    "floor_area_sqm": {
-      "type": "number"
-    },
-    "trading_days_per_week": {
-      "type": "number",
-      "default": 7
     }
   },
   "required": [
     "organisation_id",
+    "code",
     "name"
   ],
   "rls": {
     "read": {
-      "$and": [
-        {
-          "data.organisation_id": "{{user.data.organisation_id}}"
-        },
-        {
-          "$or": [
-            {
-              "user_condition": {
-                "role": "admin"
-              }
-            },
-            {
-              "id": {
-                "$in": "{{user.data.site_ids}}"
-              }
-            }
-          ]
-        }
-      ]
+      "data.organisation_id": "{{user.data.organisation_id}}"
     },
     "create": {
       "$and": [

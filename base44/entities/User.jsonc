@@ -1,17 +1,28 @@
 {
+  "name": "User",
+  "type": "object",
   "properties": {
-    "role": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "system_role": {
       "type": "string",
-      "description": "The role of the user in the app",
       "enum": [
-        "admin",
-        "user"
+        "owner",
+        "finance_manager",
+        "site_manager",
+        "shift_supervisor",
+        "accountant",
+        "auditor",
+        "system"
       ]
     }
   },
-  "required": [
-    "role"
-  ],
-  "name": "User",
-  "type": "object"
+  "required": []
 }

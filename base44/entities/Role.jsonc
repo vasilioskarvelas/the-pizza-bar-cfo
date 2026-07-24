@@ -1,5 +1,5 @@
 {
-  "name": "Site",
+  "name": "Role",
   "type": "object",
   "properties": {
     "organisation_id": {
@@ -8,42 +8,24 @@
     "name": {
       "type": "string"
     },
-    "suburb": {
+    "description": {
       "type": "string"
     },
-    "address": {
-      "type": "string"
-    },
-    "abn": {
-      "type": "string"
-    },
-    "timezone": {
+    "scope": {
       "type": "string",
-      "default": "Australia/Melbourne"
-    },
-    "business_day_boundary": {
-      "type": "string",
-      "default": "04:00"
+      "enum": [
+        "organisation",
+        "site"
+      ],
+      "default": "organisation"
     },
     "status": {
       "type": "string",
       "enum": [
         "active",
-        "closed",
-        "opening"
+        "retired"
       ],
       "default": "active"
-    },
-    "opening_date": {
-      "type": "string",
-      "format": "date"
-    },
-    "floor_area_sqm": {
-      "type": "number"
-    },
-    "trading_days_per_week": {
-      "type": "number",
-      "default": 7
     }
   },
   "required": [
@@ -52,25 +34,7 @@
   ],
   "rls": {
     "read": {
-      "$and": [
-        {
-          "data.organisation_id": "{{user.data.organisation_id}}"
-        },
-        {
-          "$or": [
-            {
-              "user_condition": {
-                "role": "admin"
-              }
-            },
-            {
-              "id": {
-                "$in": "{{user.data.site_ids}}"
-              }
-            }
-          ]
-        }
-      ]
+      "data.organisation_id": "{{user.data.organisation_id}}"
     },
     "create": {
       "$and": [

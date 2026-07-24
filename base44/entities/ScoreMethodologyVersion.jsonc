@@ -1,76 +1,45 @@
 {
-  "name": "Site",
+  "name": "ScoreMethodologyVersion",
   "type": "object",
   "properties": {
     "organisation_id": {
       "type": "string"
     },
-    "name": {
+    "version": {
+      "type": "number"
+    },
+    "label": {
       "type": "string"
     },
-    "suburb": {
-      "type": "string"
-    },
-    "address": {
-      "type": "string"
-    },
-    "abn": {
-      "type": "string"
-    },
-    "timezone": {
+    "effective_from": {
       "type": "string",
-      "default": "Australia/Melbourne"
+      "format": "date"
     },
-    "business_day_boundary": {
+    "effective_to": {
       "type": "string",
-      "default": "04:00"
+      "format": "date"
     },
     "status": {
       "type": "string",
       "enum": [
+        "draft",
         "active",
-        "closed",
-        "opening"
+        "retired"
       ],
-      "default": "active"
+      "default": "draft"
     },
-    "opening_date": {
-      "type": "string",
-      "format": "date"
-    },
-    "floor_area_sqm": {
-      "type": "number"
-    },
-    "trading_days_per_week": {
-      "type": "number",
-      "default": 7
+    "description": {
+      "type": "string"
     }
   },
   "required": [
     "organisation_id",
-    "name"
+    "version",
+    "effective_from"
   ],
   "rls": {
     "read": {
-      "$and": [
-        {
-          "data.organisation_id": "{{user.data.organisation_id}}"
-        },
-        {
-          "$or": [
-            {
-              "user_condition": {
-                "role": "admin"
-              }
-            },
-            {
-              "id": {
-                "$in": "{{user.data.site_ids}}"
-              }
-            }
-          ]
-        }
-      ]
+      "data.organisation_id": "{{user.data.organisation_id}}"
     },
     "create": {
       "$and": [

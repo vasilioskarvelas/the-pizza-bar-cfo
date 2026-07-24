@@ -1,76 +1,43 @@
 {
-  "name": "Site",
+  "name": "MaterialityRule",
   "type": "object",
   "properties": {
     "organisation_id": {
       "type": "string"
     },
-    "name": {
+    "metric": {
       "type": "string"
     },
-    "suburb": {
+    "site_id": {
       "type": "string"
     },
-    "address": {
-      "type": "string"
+    "threshold_absolute": {
+      "type": "number"
     },
-    "abn": {
-      "type": "string"
+    "threshold_percentage": {
+      "type": "number"
     },
-    "timezone": {
-      "type": "string",
-      "default": "Australia/Melbourne"
+    "suppression_window_hours": {
+      "type": "number"
     },
-    "business_day_boundary": {
-      "type": "string",
-      "default": "04:00"
-    },
-    "status": {
-      "type": "string",
-      "enum": [
-        "active",
-        "closed",
-        "opening"
-      ],
-      "default": "active"
-    },
-    "opening_date": {
+    "effective_from": {
       "type": "string",
       "format": "date"
     },
-    "floor_area_sqm": {
-      "type": "number"
-    },
-    "trading_days_per_week": {
-      "type": "number",
-      "default": 7
+    "effective_to": {
+      "type": "string",
+      "format": "date"
     }
   },
   "required": [
     "organisation_id",
-    "name"
+    "metric",
+    "threshold_absolute",
+    "effective_from"
   ],
   "rls": {
     "read": {
-      "$and": [
-        {
-          "data.organisation_id": "{{user.data.organisation_id}}"
-        },
-        {
-          "$or": [
-            {
-              "user_condition": {
-                "role": "admin"
-              }
-            },
-            {
-              "id": {
-                "$in": "{{user.data.site_ids}}"
-              }
-            }
-          ]
-        }
-      ]
+      "data.organisation_id": "{{user.data.organisation_id}}"
     },
     "create": {
       "$and": [

@@ -1,0 +1,70 @@
+{
+  "name": "Organisation",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "legal_name": {
+      "type": "string"
+    },
+    "abn": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "suspended"
+      ],
+      "default": "active"
+    },
+    "gst_method": {
+      "type": "string",
+      "enum": [
+        "cash",
+        "accrual"
+      ],
+      "default": "accrual"
+    },
+    "default_currency": {
+      "type": "string",
+      "default": "AUD"
+    },
+    "timezone": {
+      "type": "string",
+      "default": "Australia/Melbourne"
+    },
+    "data_residency": {
+      "type": "string",
+      "default": "AU"
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "rls": {
+    "read": {
+      "id": "{{user.data.organisation_id}}"
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "$and": [
+        {
+          "id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": false
+  }
+}

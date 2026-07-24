@@ -1,76 +1,66 @@
 {
-  "name": "Site",
+  "name": "KPIDefinition",
   "type": "object",
   "properties": {
     "organisation_id": {
       "type": "string"
     },
+    "code": {
+      "type": "string"
+    },
     "name": {
       "type": "string"
     },
-    "suburb": {
+    "formula_description": {
       "type": "string"
     },
-    "address": {
-      "type": "string"
-    },
-    "abn": {
-      "type": "string"
-    },
-    "timezone": {
+    "unit": {
       "type": "string",
-      "default": "Australia/Melbourne"
+      "enum": [
+        "percentage",
+        "currency",
+        "weeks",
+        "days",
+        "count",
+        "ratio"
+      ]
     },
-    "business_day_boundary": {
+    "direction": {
       "type": "string",
-      "default": "04:00"
+      "enum": [
+        "lower_is_better",
+        "higher_is_better"
+      ]
+    },
+    "evaluation_cadence": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly",
+        "quarterly"
+      ]
+    },
+    "owner_role": {
+      "type": "string"
     },
     "status": {
       "type": "string",
       "enum": [
         "active",
-        "closed",
-        "opening"
+        "retired"
       ],
       "default": "active"
-    },
-    "opening_date": {
-      "type": "string",
-      "format": "date"
-    },
-    "floor_area_sqm": {
-      "type": "number"
-    },
-    "trading_days_per_week": {
-      "type": "number",
-      "default": 7
     }
   },
   "required": [
     "organisation_id",
+    "code",
     "name"
   ],
   "rls": {
     "read": {
-      "$and": [
-        {
-          "data.organisation_id": "{{user.data.organisation_id}}"
-        },
-        {
-          "$or": [
-            {
-              "user_condition": {
-                "role": "admin"
-              }
-            },
-            {
-              "id": {
-                "$in": "{{user.data.site_ids}}"
-              }
-            }
-          ]
-        }
-      ]
+      "data.organisation_id": "{{user.data.organisation_id}}"
     },
     "create": {
       "$and": [

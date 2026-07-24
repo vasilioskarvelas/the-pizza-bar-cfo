@@ -1,54 +1,21 @@
 {
-  "name": "Site",
+  "name": "SiteGroupMembership",
   "type": "object",
   "properties": {
     "organisation_id": {
       "type": "string"
     },
-    "name": {
+    "site_id": {
       "type": "string"
     },
-    "suburb": {
+    "site_group_id": {
       "type": "string"
-    },
-    "address": {
-      "type": "string"
-    },
-    "abn": {
-      "type": "string"
-    },
-    "timezone": {
-      "type": "string",
-      "default": "Australia/Melbourne"
-    },
-    "business_day_boundary": {
-      "type": "string",
-      "default": "04:00"
-    },
-    "status": {
-      "type": "string",
-      "enum": [
-        "active",
-        "closed",
-        "opening"
-      ],
-      "default": "active"
-    },
-    "opening_date": {
-      "type": "string",
-      "format": "date"
-    },
-    "floor_area_sqm": {
-      "type": "number"
-    },
-    "trading_days_per_week": {
-      "type": "number",
-      "default": 7
     }
   },
   "required": [
     "organisation_id",
-    "name"
+    "site_id",
+    "site_group_id"
   ],
   "rls": {
     "read": {
@@ -64,7 +31,7 @@
               }
             },
             {
-              "id": {
+              "data.site_id": {
                 "$in": "{{user.data.site_ids}}"
               }
             }
