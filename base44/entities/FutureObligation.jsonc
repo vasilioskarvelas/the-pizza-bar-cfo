@@ -1,0 +1,145 @@
+{
+  "name": "FutureObligation",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "obligation_type": {
+      "type": "string",
+      "enum": [
+        "gst",
+        "payg",
+        "superannuation",
+        "payroll",
+        "loan_repayment",
+        "lease",
+        "subscription",
+        "insurance",
+        "manual_commitment",
+        "tax",
+        "capital"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "amount_cents": {
+      "type": "number"
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "one_off",
+        "weekly",
+        "fortnightly",
+        "monthly",
+        "quarterly",
+        "yearly"
+      ],
+      "default": "one_off"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low"
+      ],
+      "default": "medium"
+    },
+    "source_ref": {
+      "type": "string"
+    },
+    "forecast_cash_impact_cents": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "paid",
+        "overdue",
+        "cancelled"
+      ],
+      "default": "scheduled"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "obligation_type",
+    "name",
+    "due_date",
+    "amount_cents"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

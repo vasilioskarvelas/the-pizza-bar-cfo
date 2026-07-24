@@ -1,0 +1,106 @@
+{
+  "name": "ForecastResult",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "scenario_id": {
+      "type": "string"
+    },
+    "horizon_months": {
+      "type": "number"
+    },
+    "baseline_period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "baseline_period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "forecast_hash": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "string"
+    },
+    "engine_version": {
+      "type": "string"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "forecast_hash",
+    "engine_version"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

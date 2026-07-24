@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Shield, Bell } from 'lucide-react';
+import { Shield, Bell, TrendingUp, CalendarClock, GitBranch } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import DashboardToolbar from '@/components/dashboard/DashboardToolbar';
 import Hero from '@/components/dashboard/Hero';
@@ -62,7 +62,13 @@ export default function Dashboard() {
             <h1 className="text-base font-bold tracking-tight">Executive Dashboard</h1>
             <p className="text-xs text-zinc-500">HFOS · every value sourced from the deterministic Phase 05/06 engines</p>
           </div>
-          <Link to="/notifications" className="ml-auto flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:text-amber-300"><Bell className="w-3.5 h-3.5" /> Notifications</Link>
+          <div className="ml-auto flex items-center gap-1.5">
+            <Link to="/forecast" className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:text-amber-300"><TrendingUp className="w-3.5 h-3.5" /> Forecast</Link>
+            <Link to="/timeline" className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:text-amber-300"><CalendarClock className="w-3.5 h-3.5" /> Timeline</Link>
+            <Link to="/scenarios" className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:text-amber-300"><GitBranch className="w-3.5 h-3.5" /> Scenarios</Link>
+            <Link to="/obligations" className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:text-amber-300"><CalendarClock className="w-3.5 h-3.5" /> Obligations</Link>
+            <Link to="/notifications" className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:text-amber-300"><Bell className="w-3.5 h-3.5" /> Alerts</Link>
+          </div>
           <Link to="/foundation" className="text-xs px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:text-amber-300">Foundation</Link>
           <Link to="/admin/users" className="text-xs px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:text-amber-300">Admin →</Link>
         </div>
@@ -95,7 +101,7 @@ export default function Dashboard() {
               <WidgetSection widgetKey="connectors" title="Connectors"><ConnectorHealth connectors={data.connectors} /></WidgetSection>
             </div>
             <WidgetSection widgetKey="timeline" title="Activity Timeline"><ActivityTimeline siteId={siteId} /></WidgetSection>
-            <p className="text-[11px] text-zinc-600 text-center py-3">Phase 07 · Dashboard values are read-only from CalculationResult/CalculationRun/Owner Score/Reconciliation/Connector data — no metric is calculated in the UI.</p>
+            <p className="text-[11px] text-zinc-600 text-center py-3">Phase 08 · Forecast, Timeline & Scenarios are deterministic and isolated from live data — explore them via the links above.</p>
           </div>
         )}
       </div>

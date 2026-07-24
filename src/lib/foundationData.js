@@ -119,16 +119,13 @@ export const LIMITATIONS = [
 ];
 
 export const NOT_IMPLEMENTED = [
-  'Owner Score calculation (item 6)',
-  'Executive dashboard & Daily Owner Brief (item 7)',
-  'Financial Timeline (item 8)',
   'Weekly report (item 9)',
   'Numeric validator & permission-filtered AI context (item 10)',
   'AI fixed-format summary (item 11)',
   'AI Financial Chat (item 12 — §4.1 eight-gate release condition)',
 ];
 
-// Addendum 001 — Version 1 build order (§7.1). Items 1-7 complete; item 8 next.
+// Addendum 001 — Version 1 build order (§7.1). Items 1-8 complete; item 9 next.
 export const BUILD_ORDER = [
   { id: 1, component: 'Schema, RLS, audit log', state: 'complete', dependsOn: '—' },
   { id: 2, component: 'Authentication, roles, MFA', state: 'complete', dependsOn: '1' },
@@ -137,8 +134,8 @@ export const BUILD_ORDER = [
   { id: 5, component: 'Deterministic financial & tax engine', state: 'complete', dependsOn: '4' },
   { id: 6, component: 'Owner Score calculation', state: 'complete', dependsOn: '5' },
   { id: 7, component: 'Executive dashboard & Daily Owner Brief', state: 'complete', dependsOn: '6' },
-  { id: 8, component: 'Financial Timeline', state: 'next', dependsOn: '5' },
-  { id: 9, component: 'Weekly report', state: 'pending', dependsOn: '5' },
+  { id: 8, component: 'Financial Timeline, Forecasting & Scenario Engine', state: 'complete', dependsOn: '5, 6' },
+  { id: 9, component: 'Weekly report', state: 'next', dependsOn: '5' },
   { id: 10, component: 'Numeric validator & permission-filtered AI context', state: 'pending', dependsOn: '5, 2' },
   { id: 11, component: 'AI fixed-format summary', state: 'pending', dependsOn: '10' },
   { id: 12, component: 'AI Financial Chat', state: 'gated', dependsOn: '11 + §4.1 eight-gate release' },

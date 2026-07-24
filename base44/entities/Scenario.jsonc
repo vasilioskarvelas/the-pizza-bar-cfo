@@ -1,0 +1,112 @@
+{
+  "name": "Scenario",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "archived"
+      ],
+      "default": "draft"
+    },
+    "adjustments": {
+      "type": "string"
+    },
+    "baseline_period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "baseline_period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "horizon_months": {
+      "type": "number",
+      "default": 12
+    },
+    "color": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "name",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

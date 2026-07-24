@@ -35,6 +35,16 @@ import AdminAlertRules from '@/pages/admin/AlertRules';
 import AdminOwnerBriefRules from '@/pages/admin/OwnerBriefRules';
 import AdminDashboardCache from '@/pages/admin/DashboardCache';
 import AdminNotificationRules from '@/pages/admin/NotificationRules';
+import Timeline from '@/pages/Timeline';
+import Forecast from '@/pages/Forecast';
+import Scenarios from '@/pages/Scenarios';
+import Obligations from '@/pages/Obligations';
+import AdminForecastConfig from '@/pages/admin/ForecastConfig';
+import AdminForecastAssumptions from '@/pages/admin/ForecastAssumptions';
+import AdminScenarioManagement from '@/pages/admin/ScenarioManagement';
+import AdminTimelineConfig from '@/pages/admin/TimelineConfig';
+import AdminSimulationRules from '@/pages/admin/SimulationRules';
+import AdminForecastCache from '@/pages/admin/ForecastCache';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -66,6 +76,10 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<Dashboard />} />
       <Route path="/foundation" element={<Foundation />} />
       <Route path="/notifications" element={<Notifications />} />
+      <Route path="/timeline" element={<Timeline />} />
+      <Route path="/forecast" element={<Forecast />} />
+      <Route path="/scenarios" element={<Scenarios />} />
+      <Route path="/obligations" element={<Obligations />} />
       <Route element={<AdminLayout />}>
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/roles" element={<AdminRoles />} />
@@ -91,6 +105,12 @@ const AuthenticatedApp = () => {
         <Route path="/admin/brief-rules" element={<AdminOwnerBriefRules />} />
         <Route path="/admin/dashboard-cache" element={<AdminDashboardCache />} />
         <Route path="/admin/notification-rules" element={<AdminNotificationRules />} />
+        <Route path="/admin/forecast-config" element={<AdminForecastConfig />} />
+        <Route path="/admin/forecast-assumptions" element={<AdminForecastAssumptions />} />
+        <Route path="/admin/scenario-management" element={<AdminScenarioManagement />} />
+        <Route path="/admin/timeline-config" element={<AdminTimelineConfig />} />
+        <Route path="/admin/simulation-rules" element={<AdminSimulationRules />} />
+        <Route path="/admin/forecast-cache" element={<AdminForecastCache />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
