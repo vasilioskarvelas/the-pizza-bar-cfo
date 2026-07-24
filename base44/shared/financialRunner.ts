@@ -42,10 +42,20 @@ const COMMITMENT_ROUTE = {
 function labelAccount(label) { return (label || "").split("|")[0] || "UNMAPPED"; }
 function labelGst(label) { return (label || "").split("|")[1] || "GST_FREE"; }
 
-function notSuperseded(results) {
-  const sup = new Set(results.filter((r) => r.supersedes_result_id).map((r) => r.supersedes_result_id));
-  return results.filter((r) => !sup.has(r.id));
+// "Current" = the latest result per (entity_type, entity_id, site, period) by created_date.
+// Supersession (supersedes_result_id) still records history, but because records are
+// immutable (update/delete denied) and supersession is 1:1, prior runs could leave
+// duplicate current results. "Latest per key" is deterministic and duplicate-proof.
+function latestPerKey(results) {
+  const map = new Map();
+  for (const r of results) {
+    const key = `${r.entity_type}|${r.entity_id}|${r.site_id || ""}|${r.period_start}|${r.period_end}`;
+    const prev = map.get(key);
+    if (!prev || String(r.created_date || "").localeCompare(String(prev.created_date || "")) > 0) map.set(key, r);
+  }
+  return [...map.values()];
 }
+const notSuperseded = latestPerKey;
 
 // ---- core run --------------------------------------------------------------
 
@@ -81,7 +91,7 @@ export async function runEngine(base44, opts) {
 
   // 3. Exclude canonical txns with unresolved CRITICAL reconciliation exceptions.
   const excs = await S.ReconciliationException.filter({ organisation_id: orgId, resolved: false });
-  const excludedSrc = new Set(execs.filter((e) => e.severity === "critical" && e.source_record_id).map((e) => e.source_record_id));
+  const excludedSrc = new Set(excs.filter((e) => e.severity === "critical" && e.source_record_id).map((e) => e.source_record_id));
   const excludedTxns = canon.filter((t) => excludedSrc.has(t.entity_id));
   canon = canon.filter((t) => !excludedSrc.has(t.entity_id));
 
@@ -134,12 +144,13 @@ export async function runEngine(base44, opts) {
       // route financing/investing cash-flow proxies from equity/debt/asset movements
       if (cls.line === "equity" || cls.line === "long_term_debt") { const f = ensure("financing_cash_flow"); f.cents += cents; f.confs.push("estimated"); }
       if (cls.line === "fixed_assets") { const inv = ensure("investing_cash_flow"); inv.cents += -cents; inv.confs.push("estimated"); }
-      // GST
+      // GST: gst-account legs carry the GST directly (collected/output or input credit).
+      // Revenue/expense legs are ex-GST (final P&L amount); their treatment only
+      // classifies GST-free vs taxable sales/purchases. No GST is re-extracted here.
       const g = labelGst(t.label);
-      if (g === "GST_INCL") {
-        const gst = gstComponentInclusive(Math.abs(cents), gstRate);
-        if (cls.line === "revenue") gstCollected += gst;
-        else if (["cogs", "labour_cost", "operating_expenses"].includes(cls.line)) gstPaid += gst;
+      if (cls.line === "gst_payable") {
+        if (cents > 0) gstCollected += cents;
+        else gstPaid += -cents;
       } else if (g === "GST_FREE") {
         if (cls.line === "revenue") gstFreeSales += Math.abs(cents);
         else if (["cogs", "labour_cost", "operating_expenses"].includes(cls.line)) gstFreePurchases += Math.abs(cents);
@@ -178,7 +189,8 @@ export async function runEngine(base44, opts) {
     ensure("gst_free_sales").cents += gstFreeSales; raw["gst_free_sales"].confs.push("confirmed");
     ensure("gst_free_purchases").cents += gstFreePurchases; raw["gst_free_purchases"].confs.push("confirmed");
     ensure("input_taxed").cents += inputTaxed; raw["input_taxed"].confs.push("confirmed");
-    ensure("gst_payable").cents += (gstCollected - gstPaid); raw["gst_payable"].confs.push("confirmed");
+    // NOTE: BS gst_payable is populated solely from gst-account canonical legs above;
+    // the tax-line net_gst_position mirrors it for reporting. Do not double-seed.
     for (const code of Object.keys(raw)) if (raw[code].confs.length) raw[code].confidence = worstConfidence(raw[code].confs);
 
     // 9. Prior period (revenue growth, opening cash).
@@ -194,12 +206,12 @@ export async function runEngine(base44, opts) {
     const V = computeAll(raw, prior, companyTaxRate);
 
     // 11. Persist results + lineage + supersession.
-    const scopeResults = notSuperseded(await S.CalculationResult.filter({
-      organisation_id: orgId, result_type: "financial_figure",
-    })).filter((r) => GROUP_ETYPE[Object.keys(GROUP_ETYPE).find((g) => GROUP_ETYPE[g] === r.entity_type)] &&
-      r.period_start === periodStart && r.period_end === periodEnd &&
-      (siteId ? r.site_id === siteId : !r.site_id));
-    const priorByCode = {}; scopeResults.forEach((r) => { priorByCode[r.entity_id] = r; });
+    const allScope = notSuperseded(await S.CalculationResult.filter({ organisation_id: orgId }))
+      .filter((r) => r.entity_type !== "source_record" && r.period_start === periodStart && r.period_end === periodEnd &&
+        (siteId ? r.site_id === siteId : !r.site_id));
+    const figScope = allScope.filter((r) => r.result_type === "financial_figure");
+    const kpiScope = allScope.filter((r) => r.result_type === "kpi");
+    const priorByCode = {}; figScope.forEach((r) => { priorByCode[r.entity_id] = r; });
 
     const created = []; let supersededCount = 0;
     const persistLine = async (code) => {
@@ -260,7 +272,7 @@ export async function runEngine(base44, opts) {
       const f = KPI_FORMULAS[kpi.code];
       if (!f) continue;
       const r = f(V, prior);
-      const priorKpi = scopeResults.find((x) => x.entity_id === kpi.code && x.result_type === "kpi");
+      const priorKpi = kpiScope.find((x) => x.entity_id === kpi.code);
       const res = await S.CalculationResult.create({
         organisation_id: orgId, site_id: siteId, calculation_run_id: run.id,
         result_type: "kpi", kpi_definition_id: kpi.id, entity_type: "kpi", entity_id: kpi.code,

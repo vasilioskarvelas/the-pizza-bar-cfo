@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import { useAccess, isPlatformAdmin, isOwner } from '@/lib/accessService';
-import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline } from 'lucide-react';
+import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline, Calculator, Coins, Gauge, GitBranch, Receipt } from 'lucide-react';
 
 const NAV = [
   { to: '/admin/users', label: 'Users', icon: Users, perm: null },
@@ -16,6 +16,12 @@ const NAV = [
   { to: '/admin/exceptions', label: 'Exceptions', icon: AlertTriangle, perm: null },
   { to: '/admin/account-mapping', label: 'Account Mapping', icon: BookMarked, perm: null },
   { to: '/admin/source-mapping', label: 'Source Mapping', icon: Spline, perm: null },
+  { to: '/admin/calc-runs', label: 'Calculation Runs', icon: Calculator, perm: null },
+  { to: '/admin/financial-results', label: 'Financial Results', icon: Coins, perm: null },
+  { to: '/admin/kpi-results', label: 'KPI Results', icon: Gauge, perm: null },
+  { to: '/admin/calc-lineage', label: 'Calc Lineage', icon: GitBranch, perm: null },
+  { to: '/admin/tax-results', label: 'Tax Results', icon: Receipt, perm: null },
+  { to: '/admin/engine-status', label: 'Engine Status', icon: Activity, perm: null },
 ];
 
 export default function AdminLayout() {

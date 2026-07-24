@@ -213,7 +213,7 @@ export default function Foundation() {
         </Section>
 
         <footer className="text-center py-6 mt-4 border-t border-zinc-900">
-          <p className="text-xs text-zinc-700">Phase 01 verified · Phase 02 (auth, roles, MFA) verified · Phase 03 (Xero connector & immutable raw ingestion) verified · Phase 04 (canonical model & reconciliation) verified. Next: item 5 — deterministic financial & tax engine.</p>
+          <p className="text-xs text-zinc-700">Phase 01 verified · Phase 02 (auth, roles, MFA) verified · Phase 03 (Xero connector & immutable raw ingestion) verified · Phase 04 (canonical model & reconciliation) verified · Phase 05 (deterministic financial &amp; tax engine) verified. Next: item 6 — Owner Score calculation.</p>
         </footer>
       </div>
     </div>

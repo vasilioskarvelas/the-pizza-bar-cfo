@@ -176,7 +176,7 @@ export const LINES = {
   total_current_liabilities: { label: "Total Current Liabilities", unit: "cents", group: "bs", level: 1, deps: ["accounts_payable", "gst_payable", "payg_withholding", "superannuation_payable", "other_current_liabilities"] },
   total_liabilities:         { label: "Total Liabilities", unit: "cents", group: "bs", level: 2, deps: ["total_current_liabilities", "long_term_debt"] },
   working_capital:           { label: "Working Capital", unit: "cents", group: "bs", level: 2, deps: ["total_current_assets", "total_current_liabilities"] },
-  balance_check:             { label: "Balance Sheet Check", unit: "cents", group: "bs", level: 3, deps: ["total_assets", "total_liabilities", "equity", "retained_earnings", "net_profit"] },
+  balance_check:             { label: "Balance Sheet Check", unit: "cents", group: "bs", level: 5, deps: ["total_assets", "total_liabilities", "equity", "retained_earnings", "net_profit"] },
 
   // --- Cash flow derived ---
   operating_cash_flow: { label: "Operating Cash Flow", unit: "cents", group: "cf", level: 5, deps: ["net_profit", "depreciation", "amortisation", "total_current_liabilities", "accounts_receivable", "inventory", "other_current_assets"] },

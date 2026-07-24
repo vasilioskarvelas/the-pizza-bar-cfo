@@ -1,0 +1,47 @@
+{
+  "name": "Financial Calculations",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "financial_calculations",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "run_daily": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "runScheduledCalculations",
+            "args": {
+              "trigger": "scheduled"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Run scheduled financial calculations",
+            "description": "Daily deterministic financial & tax calculation for every active site + org consolidation"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 6 * * *",
+      "one_time_date": null,
+      "timezone": "Australia/Melbourne",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Daily (06:00 Melbourne) automatic run of the deterministic financial & tax calculation engine for every active site plus the organisation-consolidated pass. Invokes the runScheduledCalculations backend function. No AI participates."
+}

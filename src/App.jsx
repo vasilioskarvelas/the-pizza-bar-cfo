@@ -21,6 +21,12 @@ import AdminReconciliation from '@/pages/admin/ReconciliationQueue';
 import AdminExceptions from '@/pages/admin/Exceptions';
 import AdminAccountMapping from '@/pages/admin/AccountMapping';
 import AdminSourceMapping from '@/pages/admin/SourceMapping';
+import AdminCalcRuns from '@/pages/admin/CalculationRuns';
+import AdminFinancialResults from '@/pages/admin/FinancialResults';
+import AdminKpiResults from '@/pages/admin/KpiResults';
+import AdminCalcLineage from '@/pages/admin/CalculationLineage';
+import AdminTaxResults from '@/pages/admin/TaxResults';
+import AdminEngineStatus from '@/pages/admin/EngineStatus';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -63,6 +69,12 @@ const AuthenticatedApp = () => {
         <Route path="/admin/exceptions" element={<AdminExceptions />} />
         <Route path="/admin/account-mapping" element={<AdminAccountMapping />} />
         <Route path="/admin/source-mapping" element={<AdminSourceMapping />} />
+        <Route path="/admin/calc-runs" element={<AdminCalcRuns />} />
+        <Route path="/admin/financial-results" element={<AdminFinancialResults />} />
+        <Route path="/admin/kpi-results" element={<AdminKpiResults />} />
+        <Route path="/admin/calc-lineage" element={<AdminCalcLineage />} />
+        <Route path="/admin/tax-results" element={<AdminTaxResults />} />
+        <Route path="/admin/engine-status" element={<AdminEngineStatus />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
