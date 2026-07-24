@@ -35,8 +35,8 @@ Deno.serve(async (req) => {
     if (action === 'provision' || action === 'changeRole' || action === 'changeSites') {
       const { userId, email, systemRole, siteIds } = body;
       if (!userId) return Response.json({ error: 'userId required' }, { status: 400 });
-      const target = await S.User.get(userId);
-      if (!target) return Response.json({ error: 'User not found' }, { status: 404 });
+      let target;
+      try { target = await S.User.get(userId); } catch { return Response.json({ error: 'User not found' }, { status: 404 }); }
       let profile = (await S.UserProfile.filter({ organisation_id: orgId, user_id: userId }))[0];
       const profileData = { organisation_id: orgId, user_id: userId, user_email: email || target?.email, system_role: systemRole || profile?.system_role, status: 'active' };
       if (profile) await S.UserProfile.update(profile.id, profileData); else await S.UserProfile.create(profileData);

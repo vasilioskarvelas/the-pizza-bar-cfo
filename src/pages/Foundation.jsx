@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
 import { Shield, Database, Lock, CheckCircle2, Layers, ListChecks } from 'lucide-react';
 import ZoneMap from '@/components/foundation/ZoneMap';
 import EntityTable from '@/components/foundation/EntityTable';
@@ -104,6 +105,7 @@ export default function Foundation() {
             <h1 className="text-lg font-bold tracking-tight">HFOS Foundation — ERD v1.0 (LOCKED) + Addendum 001</h1>
             <p className="text-xs text-zinc-500">Schema, Row-Level Security & Immutable Audit · Owner Experience roadmap accepted · Internal development screen</p>
           </div>
+          <Link to="/admin/users" className="ml-auto text-xs px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-300 hover:text-amber-300 hover:border-amber-500/30 transition-colors">Admin →</Link>
         </div>
         <p className="text-xs text-amber-500/80 mt-3 mb-6 px-3 py-2 rounded-lg bg-amber-500/5 border border-amber-500/15">
           This is a development verification screen, not a financial dashboard. No financial metrics are displayed. Owner Experience features (Owner Score, Daily Brief, Timeline, AI) are presentation layers gated behind the build order below.
