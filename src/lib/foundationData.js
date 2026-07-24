@@ -119,7 +119,6 @@ export const LIMITATIONS = [
 ];
 
 export const NOT_IMPLEMENTED = [
-  'Canonical model & reconciliation (item 4)',
   'Deterministic financial & tax engine (item 5)',
   'Owner Score calculation (item 6)',
   'Executive dashboard & Daily Owner Brief (item 7)',
@@ -130,13 +129,13 @@ export const NOT_IMPLEMENTED = [
   'AI Financial Chat (item 12 — §4.1 eight-gate release condition)',
 ];
 
-// Addendum 001 — Version 1 build order (§7.1). Items 1-3 complete; item 4 next.
+// Addendum 001 — Version 1 build order (§7.1). Items 1-4 complete; item 5 next.
 export const BUILD_ORDER = [
   { id: 1, component: 'Schema, RLS, audit log', state: 'complete', dependsOn: '—' },
   { id: 2, component: 'Authentication, roles, MFA', state: 'complete', dependsOn: '1' },
   { id: 3, component: 'Xero connector & immutable raw ingestion', state: 'complete', dependsOn: '1' },
-  { id: 4, component: 'Canonical model & reconciliation', state: 'next', dependsOn: '3' },
-  { id: 5, component: 'Deterministic financial & tax engine', state: 'pending', dependsOn: '4' },
+  { id: 4, component: 'Canonical model & reconciliation', state: 'complete', dependsOn: '3' },
+  { id: 5, component: 'Deterministic financial & tax engine', state: 'next', dependsOn: '4' },
   { id: 6, component: 'Owner Score calculation', state: 'pending', dependsOn: '5' },
   { id: 7, component: 'Executive dashboard & Daily Owner Brief', state: 'pending', dependsOn: '6' },
   { id: 8, component: 'Financial Timeline', state: 'pending', dependsOn: '5' },
