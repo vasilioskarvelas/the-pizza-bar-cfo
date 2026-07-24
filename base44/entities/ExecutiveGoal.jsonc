@@ -1,0 +1,195 @@
+{
+  "name": "ExecutiveGoal",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "revenue",
+        "profit",
+        "cash",
+        "owner_score",
+        "debt_reduction",
+        "food_cost",
+        "labour",
+        "gst",
+        "working_capital",
+        "custom_kpi"
+      ]
+    },
+    "owner_user_id": {
+      "type": "string"
+    },
+    "target_value": {
+      "type": "number"
+    },
+    "baseline_value": {
+      "type": "number",
+      "default": 0
+    },
+    "current_value": {
+      "type": "number",
+      "default": 0
+    },
+    "unit": {
+      "type": "string",
+      "default": "cents"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "maximize",
+        "minimize"
+      ],
+      "default": "maximize"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low"
+      ],
+      "default": "medium"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "on_track",
+        "at_risk",
+        "achieved",
+        "overdue",
+        "paused"
+      ],
+      "default": "not_started"
+    },
+    "progress_pct": {
+      "type": "number",
+      "default": 0
+    },
+    "linked_kpi_code": {
+      "type": "string"
+    },
+    "linked_figure_code": {
+      "type": "string"
+    },
+    "linked_scenario_id": {
+      "type": "string"
+    },
+    "linked_forecast_horizon_months": {
+      "type": "number"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "title",
+    "category",
+    "target_value",
+    "start_date",
+    "end_date"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            },
+            {
+              "data.owner_user_id": "{{user.id}}"
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.owner_user_id": "{{user.id}}"
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.owner_user_id": "{{user.id}}"
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

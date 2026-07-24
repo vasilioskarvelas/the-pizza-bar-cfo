@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import { useAccess, isPlatformAdmin, isOwner } from '@/lib/accessService';
-import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline, Calculator, Coins, Gauge, GitBranch, Receipt, LayoutDashboard, Bell, Sun, Database, Calendar, Sliders, TrendingUp } from 'lucide-react';
+import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline, Calculator, Coins, Gauge, GitBranch, Receipt, LayoutDashboard, Bell, Sun, Database, Calendar, Sliders, TrendingUp, Target, Rocket, Map as MapIcon, ShieldAlert, Lightbulb, Gavel, FileText, Copy, Layers } from 'lucide-react';
 
 const NAV = [
   { to: '/admin/users', label: 'Users', icon: Users, perm: null },
@@ -34,6 +34,13 @@ const NAV = [
   { to: '/admin/timeline-config', label: 'Timeline Config', icon: Calendar, perm: null },
   { to: '/admin/simulation-rules', label: 'Simulation Rules', icon: Sliders, perm: null },
   { to: '/admin/forecast-cache', label: 'Forecast Cache', icon: Database, perm: null },
+  // Phase 09 — Executive Planning
+  { to: '/admin/goal-categories', label: 'Goal Categories', icon: Layers, perm: null },
+  { to: '/admin/initiative-templates', label: 'Initiative Templates', icon: Copy, perm: null },
+  { to: '/admin/report-templates', label: 'Report Templates', icon: FileText, perm: null },
+  { to: '/admin/risk-rules', label: 'Risk Rules', icon: ShieldAlert, perm: null },
+  { to: '/admin/opportunity-rules', label: 'Opportunity Rules', icon: Lightbulb, perm: null },
+  { to: '/admin/executive-settings', label: 'Exec Settings', icon: Sliders, perm: null },
 ];
 
 export default function AdminLayout() {
@@ -89,6 +96,24 @@ export default function AdminLayout() {
           </Link>
           <Link to="/forecast" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
             <TrendingUp className="w-4 h-4" /> Forecast
+          </Link>
+          <Link to="/goals" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
+            <Target className="w-4 h-4" /> Goals
+          </Link>
+          <Link to="/scorecard" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
+            <Gauge className="w-4 h-4" /> Scorecard
+          </Link>
+          <Link to="/roadmap" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
+            <MapIcon className="w-4 h-4" /> Roadmap
+          </Link>
+          <Link to="/risks" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
+            <ShieldAlert className="w-4 h-4" /> Risks
+          </Link>
+          <Link to="/opportunities" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
+            <Lightbulb className="w-4 h-4" /> Opportunities
+          </Link>
+          <Link to="/reports" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
+            <FileText className="w-4 h-4" /> Reports
           </Link>
           <Link to="/timeline" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
             <Calendar className="w-4 h-4" /> Timeline

@@ -1,0 +1,99 @@
+{
+  "name": "InitiativeTemplate",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "template_key": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "default_budget_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "default_roi_bps": {
+      "type": "number",
+      "default": 0
+    },
+    "default_owner_score_impact": {
+      "type": "number",
+      "default": 0
+    },
+    "default_cash_impact_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "default_effort": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium"
+    },
+    "milestone_template": {
+      "type": "string"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "organisation_id",
+    "template_key",
+    "label"
+  ],
+  "rls": {
+    "read": {
+      "data.organisation_id": "{{user.data.organisation_id}}"
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "name": "ExecutiveRisk",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "rule_key": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low"
+      ],
+      "default": "medium"
+    },
+    "likelihood": {
+      "type": "string",
+      "enum": [
+        "rare",
+        "unlikely",
+        "possible",
+        "likely",
+        "almost_certain"
+      ],
+      "default": "possible"
+    },
+    "impact_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "affected_metric": {
+      "type": "string"
+    },
+    "owner_user_id": {
+      "type": "string"
+    },
+    "mitigation": {
+      "type": "string"
+    },
+    "recommended_action": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "mitigating",
+        "mitigated",
+        "closed",
+        "accepted"
+      ],
+      "default": "open"
+    },
+    "review_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "goal_id": {
+      "type": "string"
+    },
+    "acknowledged": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "organisation_id",
+    "rule_key",
+    "title",
+    "severity"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            },
+            {
+              "data.owner_user_id": "{{user.id}}"
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.owner_user_id": "{{user.id}}"
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

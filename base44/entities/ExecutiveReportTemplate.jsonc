@@ -1,0 +1,93 @@
+{
+  "name": "ExecutiveReportTemplate",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "template_key": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "sections": {
+      "type": "string"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "executive_summary",
+        "full",
+        "board",
+        "financial_only",
+        "scorecard"
+      ],
+      "default": "full"
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "ad_hoc",
+        "weekly",
+        "monthly",
+        "quarterly",
+        "annual"
+      ],
+      "default": "ad_hoc"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "organisation_id",
+    "template_key",
+    "label"
+  ],
+  "rls": {
+    "read": {
+      "data.organisation_id": "{{user.data.organisation_id}}"
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

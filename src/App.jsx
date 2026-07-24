@@ -45,6 +45,21 @@ import AdminScenarioManagement from '@/pages/admin/ScenarioManagement';
 import AdminTimelineConfig from '@/pages/admin/TimelineConfig';
 import AdminSimulationRules from '@/pages/admin/SimulationRules';
 import AdminForecastCache from '@/pages/admin/ForecastCache';
+// Phase 09 — Executive Planning
+import Goals from '@/pages/Goals';
+import Initiatives from '@/pages/Initiatives';
+import Scorecard from '@/pages/Scorecard';
+import Roadmap from '@/pages/Roadmap';
+import Risks from '@/pages/Risks';
+import Opportunities from '@/pages/Opportunities';
+import Decisions from '@/pages/Decisions';
+import ExecutiveReports from '@/pages/ExecutiveReports';
+import AdminGoalCategories from '@/pages/admin/GoalCategories';
+import AdminInitiativeTemplates from '@/pages/admin/InitiativeTemplates';
+import AdminReportTemplates from '@/pages/admin/ReportTemplates';
+import AdminRiskRules from '@/pages/admin/RiskRules';
+import AdminOpportunityRules from '@/pages/admin/OpportunityRules';
+import AdminExecutiveSettings from '@/pages/admin/ExecutiveDashboardSettings';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -80,6 +95,14 @@ const AuthenticatedApp = () => {
       <Route path="/forecast" element={<Forecast />} />
       <Route path="/scenarios" element={<Scenarios />} />
       <Route path="/obligations" element={<Obligations />} />
+      <Route path="/goals" element={<Goals />} />
+      <Route path="/initiatives" element={<Initiatives />} />
+      <Route path="/scorecard" element={<Scorecard />} />
+      <Route path="/roadmap" element={<Roadmap />} />
+      <Route path="/risks" element={<Risks />} />
+      <Route path="/opportunities" element={<Opportunities />} />
+      <Route path="/decisions" element={<Decisions />} />
+      <Route path="/reports" element={<ExecutiveReports />} />
       <Route element={<AdminLayout />}>
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/roles" element={<AdminRoles />} />
@@ -111,6 +134,12 @@ const AuthenticatedApp = () => {
         <Route path="/admin/timeline-config" element={<AdminTimelineConfig />} />
         <Route path="/admin/simulation-rules" element={<AdminSimulationRules />} />
         <Route path="/admin/forecast-cache" element={<AdminForecastCache />} />
+        <Route path="/admin/goal-categories" element={<AdminGoalCategories />} />
+        <Route path="/admin/initiative-templates" element={<AdminInitiativeTemplates />} />
+        <Route path="/admin/report-templates" element={<AdminReportTemplates />} />
+        <Route path="/admin/risk-rules" element={<AdminRiskRules />} />
+        <Route path="/admin/opportunity-rules" element={<AdminOpportunityRules />} />
+        <Route path="/admin/executive-settings" element={<AdminExecutiveSettings />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

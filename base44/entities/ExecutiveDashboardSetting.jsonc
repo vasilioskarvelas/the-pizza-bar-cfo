@@ -1,0 +1,119 @@
+{
+  "name": "ExecutiveDashboardSetting",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "scorecard_metrics": {
+      "type": "string"
+    },
+    "default_horizon_months": {
+      "type": "number",
+      "default": 12
+    },
+    "roadview_view": {
+      "type": "string",
+      "enum": [
+        "quarterly",
+        "annual"
+      ],
+      "default": "quarterly"
+    },
+    "risk_threshold_critical": {
+      "type": "number",
+      "default": 4
+    },
+    "risk_threshold_high": {
+      "type": "number",
+      "default": 3
+    },
+    "goal_overdue_days": {
+      "type": "number",
+      "default": 0
+    },
+    "initiative_overdue_days": {
+      "type": "number",
+      "default": 0
+    },
+    "notify_goal_overdue": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_initiative_overdue": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_forecast_miss": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_risk_escalation": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_goal_achieved": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_score_milestone": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_cash_milestone": {
+      "type": "boolean",
+      "default": true
+    },
+    "notify_debt_milestone": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "organisation_id"
+  ],
+  "rls": {
+    "read": {
+      "data.organisation_id": "{{user.data.organisation_id}}"
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
