@@ -1,0 +1,68 @@
+{
+  "name": "PayRun",
+  "type": "object",
+  "properties": {
+    "site_id": {
+      "type": "string"
+    },
+    "site_name": {
+      "type": "string"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "payment_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "gross_wages": {
+      "type": "number"
+    },
+    "super": {
+      "type": "number"
+    },
+    "payg_withholding": {
+      "type": "number"
+    },
+    "payroll_tax": {
+      "type": "number",
+      "default": 0
+    },
+    "net_pay": {
+      "type": "number"
+    },
+    "total_hours": {
+      "type": "number"
+    },
+    "ordinary_hours": {
+      "type": "number"
+    },
+    "overtime_hours": {
+      "type": "number"
+    },
+    "penalty_hours": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "site_id",
+    "period_start",
+    "period_end",
+    "gross_wages"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}

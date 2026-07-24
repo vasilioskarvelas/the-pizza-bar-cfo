@@ -11,6 +11,10 @@
         "type": "string"
       }
     },
+    "site_ids_synced_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "system_role": {
       "type": "string",
       "enum": [

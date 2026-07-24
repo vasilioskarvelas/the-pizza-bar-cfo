@@ -9,14 +9,13 @@
       "type": "string"
     },
     "reconciliation_type": {
-      "type": "string",
-      "enum": [
-        "source_match",
-        "balance",
-        "commitment_match",
-        "bank_match",
-        "calculation_verify"
-      ]
+      "type": "string"
+    },
+    "dataset_a": {
+      "type": "string"
+    },
+    "dataset_b": {
+      "type": "string"
     },
     "entity_type": {
       "type": "string"
@@ -73,6 +72,8 @@
   "required": [
     "organisation_id",
     "reconciliation_type",
+    "dataset_a",
+    "dataset_b",
     "entity_type",
     "period_start",
     "period_end"

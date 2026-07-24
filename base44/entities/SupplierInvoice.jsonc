@@ -1,0 +1,67 @@
+{
+  "name": "SupplierInvoice",
+  "type": "object",
+  "properties": {
+    "site_id": {
+      "type": "string"
+    },
+    "site_name": {
+      "type": "string"
+    },
+    "supplier_name": {
+      "type": "string"
+    },
+    "invoice_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "invoice_number": {
+      "type": "string"
+    },
+    "amount_gst_incl": {
+      "type": "number"
+    },
+    "gst": {
+      "type": "number"
+    },
+    "amount_excl": {
+      "type": "number"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "food",
+        "beverage",
+        "packaging",
+        "cleaning",
+        "other"
+      ],
+      "default": "food"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "received",
+        "confirmed",
+        "paid"
+      ],
+      "default": "received"
+    }
+  },
+  "required": [
+    "site_id",
+    "supplier_name",
+    "invoice_date",
+    "amount_excl"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": false,
+    "update": false,
+    "delete": false
+  }
+}

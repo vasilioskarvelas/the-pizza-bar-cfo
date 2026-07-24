@@ -53,6 +53,10 @@
       "type": "string",
       "format": "date-time"
     },
+    "last_successful_sync_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "last_run_status": {
       "type": "string"
     },

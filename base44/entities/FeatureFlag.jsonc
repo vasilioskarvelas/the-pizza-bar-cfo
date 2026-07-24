@@ -1,77 +1,48 @@
 {
-  "name": "Notification",
+  "name": "FeatureFlag",
   "type": "object",
   "properties": {
     "organisation_id": {
       "type": "string"
     },
-    "user_id": {
+    "site_id": {
       "type": "string"
     },
-    "source_event_id": {
+    "feature_key": {
       "type": "string"
     },
-    "notification_type": {
+    "enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "rollout_percentage": {
+      "type": "number",
+      "default": 0
+    },
+    "effective_from": {
       "type": "string",
-      "enum": [
-        "alert",
-        "task",
-        "anomaly",
-        "reminder",
-        "system",
-        "mention"
-      ]
+      "format": "date"
     },
-    "delivery_channel": {
+    "effective_to": {
       "type": "string",
-      "enum": [
-        "in_app",
-        "email",
-        "push",
-        "sms"
-      ],
-      "default": "in_app"
+      "format": "date"
     },
-    "title": {
+    "created_by": {
       "type": "string"
     },
-    "body": {
-      "type": "string"
+    "version": {
+      "type": "number",
+      "default": 1
     },
-    "severity": {
-      "type": "string",
-      "enum": [
-        "info",
-        "warning",
-        "critical"
-      ],
-      "default": "info"
-    },
-    "status": {
-      "type": "string",
-      "enum": [
-        "unread",
-        "read",
-        "dismissed",
-        "archived",
-        "failed"
-      ],
-      "default": "unread"
-    },
-    "related_entity_type": {
-      "type": "string"
-    },
-    "related_entity_id": {
-      "type": "string"
-    },
-    "action_url": {
+    "description": {
       "type": "string"
     }
   },
   "required": [
     "organisation_id",
-    "user_id",
-    "title"
+    "feature_key",
+    "enabled",
+    "effective_from"
   ],
   "rls": {
     "read": {
@@ -87,7 +58,12 @@
               }
             },
             {
-              "data.user_id": "{{user.id}}"
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
             }
           ]
         }
@@ -111,16 +87,9 @@
           "data.organisation_id": "{{user.data.organisation_id}}"
         },
         {
-          "$or": [
-            {
-              "user_condition": {
-                "role": "admin"
-              }
-            },
-            {
-              "data.user_id": "{{user.id}}"
-            }
-          ]
+          "user_condition": {
+            "role": "admin"
+          }
         }
       ]
     },
