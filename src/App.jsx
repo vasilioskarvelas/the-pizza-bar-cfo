@@ -8,6 +8,12 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 // Add page imports here
 import Foundation from '@/pages/Foundation';
+import AdminLayout from '@/components/admin/AdminLayout';
+import AdminUsers from '@/pages/admin/Users';
+import AdminRoles from '@/pages/admin/Roles';
+import AdminPermissions from '@/pages/admin/Permissions';
+import AdminSiteAccess from '@/pages/admin/SiteAccess';
+import AdminSecurity from '@/pages/admin/SecurityStatus';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -37,6 +43,13 @@ const AuthenticatedApp = () => {
     <Routes>
       {/* Add your page Route elements here */}
       <Route path="/" element={<Foundation />} />
+      <Route element={<AdminLayout />}>
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/roles" element={<AdminRoles />} />
+        <Route path="/admin/permissions" element={<AdminPermissions />} />
+        <Route path="/admin/site-access" element={<AdminSiteAccess />} />
+        <Route path="/admin/security" element={<AdminSecurity />} />
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
