@@ -213,7 +213,7 @@ export default function Foundation() {
         </Section>
 
         <footer className="text-center py-6 mt-4 border-t border-zinc-900">
-          <p className="text-xs text-zinc-700">Phase 01 verified. Addendum 001 accepted. Stopped at item 1 — awaiting go-ahead for item 2 (auth, roles, MFA).</p>
+          <p className="text-xs text-zinc-700">Phase 01 verified · Phase 02 (auth, roles, MFA) verified · Phase 03 (Xero connector & immutable raw ingestion) verified. Next: item 4 — canonical model & reconciliation.</p>
         </footer>
       </div>
     </div>

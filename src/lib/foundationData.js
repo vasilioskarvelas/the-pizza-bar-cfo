@@ -95,6 +95,16 @@ export const TESTS = [
   { id: 'T9', name: 'User.site_ids[] is only the RLS cache', category: 'Identity', status: 'rule_in_place', detail: 'UserSiteAccess is canonical; User.site_ids[] is denormalised with site_ids_synced_at. Sync is application-layer (deferred).' },
   { id: 'T10', name: 'Foreign-key & unique-constraint enforcement', category: 'Referential integrity', status: 'not_implemented', detail: 'Base44 has no DB-level FK/UQ. Application-layer validation module is a deferred implementation item (ERD-documented).' },
   { id: 'T11', name: 'Audit-on-write hash chain', category: 'Audit', status: 'not_implemented', detail: 'AuditLog hash-chain fields present; population requires backend-function wrappers (no DB triggers). Deferred.' },
+  { id: 'T12', name: 'Xero import creates immutable SourceRecords', category: 'Ingestion', status: 'enforced', detail: 'runConnectorSync persists raw payload + payload_hash; SourceRecord update/delete=false. 9 records across 8 runs verified.' },
+  { id: 'T13', name: 'Duplicate import never creates duplicate records', category: 'Idempotency', status: 'enforced', detail: 'idempotency_key=source_system|type|ext_id; matching payload_hash → skip. Re-run: imported 0, duplicates 3.' },
+  { id: 'T14', name: 'Corrections are superseding records, never edits', category: 'Version tracking', status: 'enforced', detail: 'Changed payload_hash → new SourceRecord with supersedes_record_id; old marked superseded. Chain verified on C1-1000.' },
+  { id: 'T15', name: 'Disabled connector refuses sync', category: 'Connector lifecycle', status: 'enforced', detail: 'status=disabled → runConnectorSync returns skipped, no run created.' },
+  { id: 'T16', name: 'Failed authentication fails the run', category: 'Error handling', status: 'enforced', detail: '401 from source → ConnectorRun failed + sync.failed event + audit; ImportBatch rejected.' },
+  { id: 'T17', name: 'Expired token fails the run', category: 'Error handling', status: 'enforced', detail: 'invalid_grant refresh → run failed (real Xero refresh needs XERO_CLIENT_ID/SECRET).' },
+  { id: 'T18', name: 'Retry succeeds after a failure', category: 'Resilience', status: 'enforced', detail: 'Fixed connector config → subsequent sync imported 2, completed.' },
+  { id: 'T19', name: 'Partial import recovers failed records', category: 'Resilience', status: 'enforced', detail: 'invalid record → ImportError (validate); rerun imports recovered record, dedupes the rest.' },
+  { id: 'T20', name: 'Live Xero OAuth connection', category: 'Connector', status: 'not_implemented', detail: 'xeroAuth authorize/callback/refresh/disconnect implemented; runtime deferred pending builder XERO_CLIENT_ID/SECRET/REDIRECT_URI.' },
+  { id: 'T21', name: 'Scheduled auto-sync cron fire', category: 'Scheduling', status: 'rule_in_place', detail: 'Connector Auto Sync workflow (hourly) registered; first fire pending. Manual path fully verified.' },
 ];
 
 export const LIMITATIONS = [
@@ -109,8 +119,6 @@ export const LIMITATIONS = [
 ];
 
 export const NOT_IMPLEMENTED = [
-  'Authentication, roles, MFA (§7.1 item 2)',
-  'Xero connector & immutable raw ingestion (item 3)',
   'Canonical model & reconciliation (item 4)',
   'Deterministic financial & tax engine (item 5)',
   'Owner Score calculation (item 6)',
@@ -122,12 +130,12 @@ export const NOT_IMPLEMENTED = [
   'AI Financial Chat (item 12 — §4.1 eight-gate release condition)',
 ];
 
-// Addendum 001 — Version 1 build order (§7.1). Item 1 complete; items 2-12 pending.
+// Addendum 001 — Version 1 build order (§7.1). Items 1-3 complete; item 4 next.
 export const BUILD_ORDER = [
   { id: 1, component: 'Schema, RLS, audit log', state: 'complete', dependsOn: '—' },
-  { id: 2, component: 'Authentication, roles, MFA', state: 'next', dependsOn: '1' },
-  { id: 3, component: 'Xero connector & immutable raw ingestion', state: 'pending', dependsOn: '1' },
-  { id: 4, component: 'Canonical model & reconciliation', state: 'pending', dependsOn: '3' },
+  { id: 2, component: 'Authentication, roles, MFA', state: 'complete', dependsOn: '1' },
+  { id: 3, component: 'Xero connector & immutable raw ingestion', state: 'complete', dependsOn: '1' },
+  { id: 4, component: 'Canonical model & reconciliation', state: 'next', dependsOn: '3' },
   { id: 5, component: 'Deterministic financial & tax engine', state: 'pending', dependsOn: '4' },
   { id: 6, component: 'Owner Score calculation', state: 'pending', dependsOn: '5' },
   { id: 7, component: 'Executive dashboard & Daily Owner Brief', state: 'pending', dependsOn: '6' },
