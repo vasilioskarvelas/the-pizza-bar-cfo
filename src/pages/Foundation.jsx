@@ -38,6 +38,10 @@ const ENTITY_LIST = [
   { name: 'SourceAuthorityRule', zone: 'configuration', pattern: 'ORG', immutable: false },
   { name: 'MaterialityRule', zone: 'configuration', pattern: 'ORG', immutable: false },
   { name: 'DataFreshnessRule', zone: 'configuration', pattern: 'ORG', immutable: false },
+  // configuration — Phase 07 presentation layer
+  { name: 'ExecutiveAlert', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
+  { name: 'AlertRule', zone: 'configuration', pattern: 'ORG', immutable: false },
+  { name: 'DashboardWidget', zone: 'configuration', pattern: 'IDENTITY', immutable: false },
   // source — ingestion
   { name: 'Connector', zone: 'source', pattern: 'ORG+SITE', immutable: false },
   { name: 'ConnectorRun', zone: 'source', pattern: 'ORG+SITE', immutable: false },
@@ -213,7 +217,7 @@ export default function Foundation() {
         </Section>
 
         <footer className="text-center py-6 mt-4 border-t border-zinc-900">
-          <p className="text-xs text-zinc-700">Phase 01 verified · Phase 02 (auth, roles, MFA) verified · Phase 03 (Xero connector & immutable raw ingestion) verified · Phase 04 (canonical model & reconciliation) verified · Phase 05 (deterministic financial &amp; tax engine) verified · Phase 06 (Owner Score calculation engine) verified. Next: item 7 — Executive dashboard &amp; Daily Owner Brief.</p>
+          <p className="text-xs text-zinc-700">Phase 01 verified · Phase 02 (auth, roles, MFA) verified · Phase 03 (Xero connector & immutable raw ingestion) verified · Phase 04 (canonical model & reconciliation) verified · Phase 05 (deterministic financial &amp; tax engine) verified · Phase 06 (Owner Score calculation engine) verified · Phase 07 (Executive dashboard &amp; Daily Owner Brief) verified. Next: item 8 — Financial Timeline.</p>
         </footer>
       </div>
     </div>

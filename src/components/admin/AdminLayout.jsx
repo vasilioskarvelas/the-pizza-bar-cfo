@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import { useAccess, isPlatformAdmin, isOwner } from '@/lib/accessService';
-import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline, Calculator, Coins, Gauge, GitBranch, Receipt } from 'lucide-react';
+import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline, Calculator, Coins, Gauge, GitBranch, Receipt, LayoutDashboard, Bell, Sun, Database } from 'lucide-react';
 
 const NAV = [
   { to: '/admin/users', label: 'Users', icon: Users, perm: null },
@@ -22,6 +22,12 @@ const NAV = [
   { to: '/admin/calc-lineage', label: 'Calc Lineage', icon: GitBranch, perm: null },
   { to: '/admin/tax-results', label: 'Tax Results', icon: Receipt, perm: null },
   { to: '/admin/engine-status', label: 'Engine Status', icon: Activity, perm: null },
+  { to: '/admin/dashboard-config', label: 'Dashboard Config', icon: LayoutDashboard, perm: null },
+  { to: '/admin/widgets', label: 'Widgets', icon: LayoutDashboard, perm: null },
+  { to: '/admin/alert-rules', label: 'Alert Rules', icon: Bell, perm: null },
+  { to: '/admin/brief-rules', label: 'Brief Rules', icon: Sun, perm: null },
+  { to: '/admin/dashboard-cache', label: 'Dashboard Cache', icon: Database, perm: null },
+  { to: '/admin/notification-rules', label: 'Notification Rules', icon: Bell, perm: null },
 ];
 
 export default function AdminLayout() {
@@ -71,8 +77,11 @@ export default function AdminLayout() {
             </NavLink>
           );
         })}
-        <div className="mt-auto pt-4 border-t border-zinc-800">
-          <Link to="/" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50">
+        <div className="mt-auto pt-4 border-t border-zinc-800 space-y-1">
+          <Link to="/" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
+            <LayoutDashboard className="w-4 h-4" /> Dashboard
+          </Link>
+          <Link to="/foundation" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50">
             <ArrowLeft className="w-4 h-4" /> Foundation
           </Link>
         </div>

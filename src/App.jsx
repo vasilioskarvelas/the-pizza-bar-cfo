@@ -27,6 +27,14 @@ import AdminKpiResults from '@/pages/admin/KpiResults';
 import AdminCalcLineage from '@/pages/admin/CalculationLineage';
 import AdminTaxResults from '@/pages/admin/TaxResults';
 import AdminEngineStatus from '@/pages/admin/EngineStatus';
+import Dashboard from '@/pages/Dashboard';
+import Notifications from '@/pages/Notifications';
+import AdminDashboardConfig from '@/pages/admin/DashboardConfig';
+import AdminWidgetConfig from '@/pages/admin/WidgetConfig';
+import AdminAlertRules from '@/pages/admin/AlertRules';
+import AdminOwnerBriefRules from '@/pages/admin/OwnerBriefRules';
+import AdminDashboardCache from '@/pages/admin/DashboardCache';
+import AdminNotificationRules from '@/pages/admin/NotificationRules';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -55,7 +63,9 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       {/* Add your page Route elements here */}
-      <Route path="/" element={<Foundation />} />
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/foundation" element={<Foundation />} />
+      <Route path="/notifications" element={<Notifications />} />
       <Route element={<AdminLayout />}>
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/roles" element={<AdminRoles />} />
@@ -75,6 +85,12 @@ const AuthenticatedApp = () => {
         <Route path="/admin/calc-lineage" element={<AdminCalcLineage />} />
         <Route path="/admin/tax-results" element={<AdminTaxResults />} />
         <Route path="/admin/engine-status" element={<AdminEngineStatus />} />
+        <Route path="/admin/dashboard-config" element={<AdminDashboardConfig />} />
+        <Route path="/admin/widgets" element={<AdminWidgetConfig />} />
+        <Route path="/admin/alert-rules" element={<AdminAlertRules />} />
+        <Route path="/admin/brief-rules" element={<AdminOwnerBriefRules />} />
+        <Route path="/admin/dashboard-cache" element={<AdminDashboardCache />} />
+        <Route path="/admin/notification-rules" element={<AdminNotificationRules />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

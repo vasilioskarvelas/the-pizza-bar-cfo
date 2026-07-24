@@ -1,0 +1,146 @@
+{
+  "name": "ExecutiveAlert",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "rule_key": {
+      "type": "string"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low"
+      ],
+      "default": "medium"
+    },
+    "title": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "affected_metric": {
+      "type": "string"
+    },
+    "business_impact": {
+      "type": "string"
+    },
+    "recommended_action": {
+      "type": "string"
+    },
+    "acknowledged": {
+      "type": "boolean",
+      "default": false
+    },
+    "acknowledged_by": {
+      "type": "string"
+    },
+    "acknowledged_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolved": {
+      "type": "boolean",
+      "default": false
+    },
+    "resolved_by": {
+      "type": "string"
+    },
+    "resolved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolution_note": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "acknowledged",
+        "resolved",
+        "dismissed"
+      ],
+      "default": "open"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "rule_key",
+    "severity",
+    "title"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

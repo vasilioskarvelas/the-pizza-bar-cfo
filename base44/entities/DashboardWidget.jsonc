@@ -1,0 +1,110 @@
+{
+  "name": "DashboardWidget",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "widget_key": {
+      "type": "string"
+    },
+    "visible": {
+      "type": "boolean",
+      "default": true
+    },
+    "collapsed": {
+      "type": "boolean",
+      "default": false
+    },
+    "favourite": {
+      "type": "boolean",
+      "default": false
+    },
+    "sort_order": {
+      "type": "number",
+      "default": 0
+    },
+    "config": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "user_id",
+    "widget_key"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.user_id": "{{user.id}}"
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.user_id": "{{user.id}}"
+            }
+          ]
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.user_id": "{{user.id}}"
+            }
+          ]
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
