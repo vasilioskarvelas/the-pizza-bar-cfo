@@ -9,8 +9,7 @@ import { readFileSync } from 'node:fs';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => { const [k, v] = a.split('='); return [k.replace(/^--/, ''), v]; }));
 const base = args.base;
-const FN_PATH = process.env.FUNCTIONS_PATH || '/_functions'; // confirm against your deployed Base44 app
-const ENTITY_PATH = process.env.ENTITY_API_PATH || '/_api/entities';
+const FN_PATH = process.env.FUNCTIONS_PATH || '/functions'; // docs: deployed functions are at /functions/<name>
 const creds = JSON.parse(readFileSync(args.creds, 'utf8'));
 
 const orgA = creds.find((c) => c.organisation === 'A');
@@ -22,9 +21,6 @@ async function call(fn, token, body) {
   return fetch(`${base}${FN_PATH}/${fn}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
 }
 
-async function readEntity(token, entity, id) {
-  return fetch(`${base}${ENTITY_PATH}/${entity}/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-}
 
 let failures = 0;
 function assert(cond, msg) { if (!cond) { failures++; console.error('ISOLATION FAIL:', msg); } else console.log('ok:', msg); }
@@ -48,14 +44,12 @@ function assert(cond, msg) { if (!cond) { failures++; console.error('ISOLATION F
     assert((j.items || []).every((i) => i.organisation_id === orgA.organisation_id), 'no Org B compliance leaked to Org A');
   }
 
-  // 3. Direct entity read with a foreign record id. A 404 is INCONCLUSIVE (path
-  //    missing OR record hidden by RLS) — it must NOT count as a pass. Only 403
-  //    (denied) passes; a 2xx with a body is a leak (fail).
-  const foreignDoc = await readEntity(orgA.access_token, 'VaultDocument', orgB.doc_id);
-  if (foreignDoc.status === 200) assert(false, 'direct foreign document read RETURNED data (isolation breach)');
-  else if (foreignDoc.status === 403) assert(true, 'direct foreign document read denied (403)');
-  else if (foreignDoc.status === 404) console.log('INCONCLUSIVE: foreign doc read returned 404 — confirm ENTITY_API_PATH is correct before trusting this check');
-  else assert(false, `direct foreign document read unexpected status ${foreignDoc.status}`);
+  // 3. Direct entity read with a foreign record id — SKIPPED. Base44 exposes no
+  //    documented generic entity REST endpoint; entity access is SDK/function-only.
+  //    Direct-record isolation is covered indirectly by the function-level checks
+  //    above (getDocumentVault/getComplianceCentre apply org+site RLS). To test a
+  //    raw record read, add a dedicated backend function that reads by id under RLS.
+  console.log('SKIP: direct foreign entity read — no documented entity REST endpoint');
 
   // 4. Modified site_id — site manager of Site A1 cannot access Site B1.
   const sm = creds.find((c) => c.role === 'site_manager' && c.organisation === 'A');

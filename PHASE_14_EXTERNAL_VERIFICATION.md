@@ -9,7 +9,7 @@ Nothing in `tests/`, `scripts/`, `manifests/`, or `docs/` is imported by the app
 ## 1. Prerequisites
 - Node 20+, npm 10+
 - A deployed/staging app URL (`APP_URL`)
-- `BASE44_API_KEY` + `BASE44_APP_ID` (service-role key with entity read/write) for dataset, backup, restore
+- `BASE44_ADMIN_TOKEN` (an admin user's Base44 access token) + `BASE44_APP_ID` for dataset, backup, restore. The service role is **not** available via the external SDK (`createClient`), so an authenticated admin token is required and RLS applies.
 - k6 installed (https://k6.io) for load tests
 - Playwright installed externally for browser tests: `npm i -D @playwright/test && npx playwright install --with-deps chromium`
 - 12 invited test accounts (see §4) with real, monitored mailboxes
@@ -19,7 +19,7 @@ Nothing in `tests/`, `scripts/`, `manifests/`, or `docs/` is imported by the app
 ```bash
 npm ci
 export APP_URL=https://YOUR_STAGING_URL
-export BASE44_API_KEY=YOUR_SERVICE_KEY
+export BASE44_ADMIN_TOKEN=YOUR_ADMIN_ACCESS_TOKEN
 export BASE44_APP_ID=YOUR_APP_ID
 ```
 
@@ -29,7 +29,7 @@ See `manifests/test-accounts.json`. For each account: invite a real user (Settin
 ## 4. Environment-variable checklist (redacted)
 | Var | Purpose | Required for |
 |---|---|---|
-| `BASE44_API_KEY` | service-role entity access | dataset, backup, restore |
+| `BASE44_ADMIN_TOKEN` | admin user access token (service role is not available externally) | dataset, backup, restore |
 | `BASE44_APP_ID` | target app | dataset, backup, restore |
 | `APP_URL` / `E2E_BASE_URL` | deployed app URL | e2e, load, permissions, isolation |
 | `E2E_USER_EMAIL` / `E2E_USER_PASSWORD` | standard user | e2e |
@@ -73,7 +73,7 @@ k6 run -e BASE_URL=$APP_URL -e STAGE=normal  tests/k6/load-tests.js
 k6 run -e BASE_URL=$APP_URL -e STAGE=peak    tests/k6/load-tests.js
 k6 run -e BASE_URL=$APP_URL -e STAGE=stress  tests/k6/load-tests.js
 ```
-Set `FUNCTIONS_PATH` (default `/_functions`) if your deployed app exposes backend functions at a different path. Profiles: smoke (5 VUs/2m), normal (20 VUs/10m), peak (100 VUs/15m), stress (ramp to failure). Captures rps, avg, p95, p99, error rate, timeouts, rate-limit responses, server failures.
+Set `FUNCTIONS_PATH` (default `/functions`, per Base44 docs) if your app exposes functions at a different path. Set `BASE44_ACCESS_TOKEN` to a user access token — the dashboard/report functions are authenticated and will reject (401) unauthenticated load traffic. Profiles: smoke (5 VUs/2m), normal (20 VUs/10m), peak (100 VUs/15m), stress (ramp to failure). Captures rps, avg, p95, p99, error rate, timeouts, rate-limit responses, server failures.
 Thresholds: reads P95 <2s, dashboards <4s, reports <8s, error rate <1%, zero tenant leakage, zero unhandled errors.
 
 ## 9. Dataset-generation commands
@@ -84,7 +84,9 @@ node scripts/generate-test-dataset.mjs --config=datasets/prod-scale.json   # cus
 node scripts/generate-test-dataset.mjs                      # create (isolated tenant!)
 node scripts/generate-test-dataset.mjs --cleanup            # delete the records created this run
 ```
-Defaults: 25 orgs, 150 sites, 500 users (→ invitation manifest, since User records are invite-only), 20k txns, 5k compliance, 2k docs, 500 reports, 500 summaries, 1k runs, 10k results, 1k goals, 1k risks, 500 forecasts, 250 scenarios. Deterministic seed, integer cents, Australian business data, no real customer info, batch + rate-limit + retry, dry-run + cleanup modes. User invitations are written to `manifests/test-accounts.generated.json`.
+Defaults: 25 orgs, 150 sites, 500 users (→ invitation manifest, since User records are invite-only), 5k compliance, 2k docs, 500 reports, 500 summaries, 1k runs, 10k results, 1k goals, 1k risks, 500 forecasts, 250 scenarios. SalesTransaction is NOT generated (entity create is denied to all app users — service-role only). Deterministic seed, integer cents, Australian business data, no real customer info, batch + rate-limit + retry, dry-run + cleanup modes. User invitations are written to `manifests/test-accounts.generated.json`.
+
+> **RLS limitation:** the external SDK has no service role, so an admin token can only create org-scoped entities (WeeklyReport, AISummary, ForecastResult, Scenario, ExecutiveGoal, ExecutiveRisk) for its own organisation. Full multi-org seeding requires a service-role backend function (not built this phase); until then multi-org generation is BLOCKED — use a single-org config or accept per-batch RLS rejections (logged).
 
 ## 10. Permission-test commands
 ```bash
@@ -98,13 +100,13 @@ Matrix: `tests/permissions/permission-matrix.json` (every role × page/function/
 node tests/isolation/tenant-isolation.mjs --base $APP_URL --creds isolation-creds.json
 # isolation-creds.json: 3 orgs (A/B/C) x 2 sites, each with an authenticated token
 ```
-Attempts cross-tenant access via modified org/site/record ids, direct function calls, direct URLs, cached state, removed permissions, suspended/deleted users, stale sessions. **Fails immediately on any cross-tenant record, metadata, or protected file URL returned.**
+Attempts cross-tenant access via modified org/site ids and direct function calls (getEnterpriseAnalytics, getComplianceCentre, getDocumentVault, generateAISummary). Direct entity-record reads are **SKIPPED** — Base44 exposes no documented generic entity REST endpoint; isolation is verified at the function layer (which applies org+site RLS). Removed-permission / suspended-user / stale-session steps are manual. **Fails immediately on any cross-tenant record or metadata returned.**
 
 ## 12. Backup commands
 ```bash
 node scripts/backup-entities.mjs        # writes backups/<timestamp>/*.json + MANIFEST.json
 ```
-Entity inventory + export order in the script. Limitations: secrets, auth/session state, file binaries (metadata URLs only), workflow definitions (re-export from `base44/workflows/*.jsonc`), point-in-time recovery are NOT covered. Records beyond the 1000/call SDK cap are truncated — noted in MANIFEST.
+Entity inventory + export order in the script. Limitations: secrets, auth/session state, file binaries (metadata URLs only), workflow definitions (re-export from `base44/workflows/*.jsonc`), point-in-time recovery are NOT covered. Records beyond the 1000/call SDK cap are truncated — noted in MANIFEST. Backup runs as the admin token user under RLS, so org-scoped entities are exported only for that user's organisation; cross-org backup requires per-org admin tokens or a service-role function.
 
 ## 13. Restore commands
 ```bash
@@ -132,7 +134,7 @@ For every test, paste a result object into **Admin → Test Results** (schema `d
 - CI: typecheck + build exit 0
 - Preview: app loads, no console/network errors, all routes resolve
 - E2e: all smoke specs pass
-- Permissions: matrix 100% pass
+- Permissions: matrix 100% pass on executable checks (RLS-only rows SKIP — see §10)
 - Isolation: zero cross-tenant leakage
 - Load: reads P95 <2s, dashboards <4s, reports <8s, error rate <1%
 - Backup/restore: round-trip counts match (within documented truncation)
@@ -166,17 +168,19 @@ For every test, paste a result object into **Admin → Test Results** (schema `d
 
 ## Items still requiring credentials / external execution
 - Real test email mailboxes for the 12 role accounts (§4)
-- `BASE44_API_KEY` / `BASE44_APP_ID` for dataset/backup/restore
+- `BASE44_ADMIN_TOKEN` / `BASE44_APP_ID` for dataset/backup/restore
 - k6, Playwright installs
 - Copy of `phase14-ci.yml` into `.github/workflows/` on the repo
 - External CI run, preview server, load runner, isolation tenant
 
 ## Known limitations
 - User records are invite-only — 500 authenticated identities require real mailboxes; synthetic data is separate from authenticated-user testing.
-- SDK `.filter` has no `skip` — pagination beyond ~1000/entity unavailable from the client; enterprise aggregation undercounts at very large scale (see pagination-audit.md).
+- SDK `.filter` supports a `skip` parameter (4th argument, per docs); the unbounded engine reads flagged in pagination-audit.md omit it and truncate at the default cap. Paginating them is a future change, not done this phase.
 - Deterministic financial/forecast runners contain unbounded per-org reads (source records, config, history) — latent truncation risk; **not changed** per the phase brief; load-test regression must prove truncation before any change.
 - No platform-level backup/restore tool — backup is entity export only; auth state, secrets, file binaries, workflow history, point-in-time recovery are not covered.
-- External `@base44/sdk` `createClient` entity method shape (`filter` / `bulkCreate` / `deleteMany`) is assumed; confirm against the installed SDK version before running dataset/backup/restore.
+- Cross-org dataset seeding via the external SDK is blocked by RLS (org-scoped entities require `data.organisation_id == user.data.organisation_id`); full multi-org seeding needs a service-role backend function (not built this phase).
+- Entities with `create: false` (e.g. `SalesTransaction`) cannot be created externally — service-role only; excluded from the dataset generator.
+- External `@base44/sdk` `createClient` takes `appId` + an optional user `token` (NOT `apiKey`); the service role (`asServiceRole`) is only available inside Base44-hosted functions, so external dataset/backup/restore run as the authenticated admin user under RLS.
 - Weekly Report scheduled execution not yet observed.
 
 **PHASE 14B PACKAGE READY — EXTERNAL EXECUTION REQUIRED**

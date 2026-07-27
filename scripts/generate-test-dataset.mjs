@@ -9,8 +9,8 @@
 //   node scripts/generate-test-dataset.mjs --cleanup             # delete the records created this run
 //
 // Environment (required for real runs):
-//   BASE44_API_KEY   service-role key with entity write scope
-//   BASE44_APP_ID    target app id
+//   BASE44_ADMIN_TOKEN  admin user access token (service role is NOT available externally)
+//   BASE44_APP_ID       target app id
 //
 // User records CANNOT be created (platform invites only). This generator emits an
 // invitation manifest (manifests/test-accounts.generated.json) for the 500-user quota;
@@ -19,7 +19,11 @@
 import { createClient } from '@base44/sdk';
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const S = createClient({ apiKey: process.env.BASE44_API_KEY, appId: process.env.BASE44_APP_ID });
+// External createClient takes appId + an optional user token (NOT apiKey). The service
+// role is NOT available externally, so this runs as the authenticated admin user under
+// RLS. Org-scoped entities can only be created for the token owner's organisation —
+// full multi-org seeding requires a service-role backend function (not built this phase).
+const S = createClient({ appId: process.env.BASE44_APP_ID, token: process.env.BASE44_ADMIN_TOKEN });
 const DRY = process.argv.includes('--dry-run');
 const CLEANUP = process.argv.includes('--cleanup');
 const COUNTS_ONLY = process.argv.includes('--before-counts');
@@ -28,7 +32,7 @@ const CONFIG = configArg ? JSON.parse(readFileSync(configArg.split('=')[1], 'utf
 
 const DEFAULTS = {
   organisations: 25, sites: 150, users: 500,
-  financial_transactions: 20000, compliance_items: 5000, documents: 2000,
+  compliance_items: 5000, documents: 2000,
   weekly_reports: 500, ai_summaries: 500, calculation_runs: 1000,
   calculation_results: 10000, goals: 1000, risks: 1000, forecasts: 500, scenarios: 250,
   ...CONFIG,
@@ -44,7 +48,7 @@ const SUBURBS = ['Strathmore','Diggers Rest','Brunswick','Footscray','Preston','
 const STATES = ['VIC','NSW','QLD','WA','SA','TAS'];
 const COMP_TYPES = ['bas','gst','payg','super','payroll','asic','annual_review','insurance','licence'];
 
-const created = { orgs: [], sites: [], compliance: [], goals: [], risks: [], runs: [], results: [], reports: [], summaries: [], docs: [], txns: [], forecasts: [], scenarios: [] };
+const created = { orgs: [], sites: [], compliance: [], goals: [], risks: [], runs: [], results: [], reports: [], summaries: [], docs: [], forecasts: [], scenarios: [] };
 
 async function batch(entity, records, label) {
   const out = [];
@@ -142,14 +146,8 @@ async function generate() {
   });
   created.docs = await batch('VaultDocument', docs, 'docs');
 
-  const txns = Array.from({ length: DEFAULTS.financial_transactions }, (_, i) => {
-    const site = created.sites[i % created.sites.length];
-    const net = Math.round(rnd() * 2000000);
-    return { site_id: site.id, site_name: site.name, business_date: '2026-07-15',
-      gross_sales: net, net_sales: net, net_sales_gst_incl: Math.round(net * 1.1),
-      gst: Math.round(net * 0.1), transaction_count: Math.round(rnd() * 200), channel: 'dine_in' };
-  });
-  created.txns = await batch('SalesTransaction', txns, 'txns');
+  // SalesTransaction is NOT generated: its RLS create is `false` (service-role only);
+  // it cannot be created via the external SDK even with an admin token.
 
   const scenarios = Array.from({ length: DEFAULTS.scenarios }, (_, i) => {
     const site = created.sites[i % created.sites.length];
@@ -185,7 +183,7 @@ async function generate() {
 async function cleanup() {
   const map = { orgs: 'Organisation', sites: 'Site', compliance: 'ComplianceItem',
     goals: 'ExecutiveGoal', risks: 'ExecutiveRisk', runs: 'CalculationRun', results: 'CalculationResult',
-    reports: 'WeeklyReport', summaries: 'AISummary', docs: 'VaultDocument', txns: 'SalesTransaction',
+    reports: 'WeeklyReport', summaries: 'AISummary', docs: 'VaultDocument',
     forecasts: 'ForecastResult', scenarios: 'Scenario' };
   for (const [name, entity] of Object.entries(map)) {
     const arr = created[name];
@@ -201,7 +199,7 @@ async function cleanup() {
 
 async function beforeCounts() {
   const entities = ['Organisation','Site','ComplianceItem','ExecutiveGoal','ExecutiveRisk','CalculationRun',
-    'CalculationResult','WeeklyReport','AISummary','VaultDocument','Scenario','ForecastResult','SalesTransaction'];
+    'CalculationResult','WeeklyReport','AISummary','VaultDocument','Scenario','ForecastResult'];
   console.log('Lower-bound counts (SDK caps each read at 1000; true counts may be higher):');
   for (const e of entities) {
     try {
@@ -212,6 +210,10 @@ async function beforeCounts() {
 }
 
 (async () => {
+  if (!process.env.BASE44_ADMIN_TOKEN) {
+    console.error('BLOCKED: BASE44_ADMIN_TOKEN (admin user access token) is required. The service role is not available via external createClient; RLS applies. Aborting.');
+    process.exit(2);
+  }
   if (COUNTS_ONLY) { await beforeCounts(); return; }
   await generate();
   if (CLEANUP) await cleanup();

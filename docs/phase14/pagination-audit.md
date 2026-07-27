@@ -43,4 +43,4 @@ Add to `tests/isolation/` / CI:
 3. Seed >1000 CalculationRuns; call `getEnterpriseDashboard`; assert run count reflects pagination or document the truncation.
 
 ## Platform limitation
-The SDK `.filter(query, sort, limit)` exposes **no `skip` parameter**, so true pagination beyond the per-call max (~1000) is unavailable from the client. At >1000 records per entity, aggregations undercount. Full-scale correctness requires a server-side aggregation endpoint or platform skip support. Documented as a known limitation; not fixable from the client.
+The SDK `.filter(query, sort, limit, skip)` **does** expose a `skip` parameter (4th argument, per the Base44 SDK docs), so true pagination is available from the client. The unbounded reads flagged RISK above omit `limit`/`skip` and therefore truncate at the default per-call cap; adding `skip` loops to those engine paths is a future change (not done this phase, per the brief — do not alter deterministic financial/forecast logic without a failing scale test). Until then, the flagged aggregations undercount at >1000 records per entity.

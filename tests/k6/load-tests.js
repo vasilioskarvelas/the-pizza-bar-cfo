@@ -12,7 +12,8 @@ import { Trend, Counter } from 'k6/metrics';
 
 const BASE = __ENV.BASE_URL || 'https://example.com';
 const STAGE = __ENV.STAGE || 'normal';
-const FUNCTIONS = __ENV.FUNCTIONS_PATH || '/_functions'; // confirm against your deployed Base44 app
+const FUNCTIONS = __ENV.FUNCTIONS_PATH || '/functions'; // docs: deployed functions are at /functions/<name>
+const TOKEN = __ENV.BASE44_ACCESS_TOKEN || ''; // set to a user access token — dashboard/report functions are authenticated
 
 const readTrend = new Trend('read_latency', true);
 const dashTrend = new Trend('dashboard_latency', true);
@@ -38,7 +39,9 @@ export const options = {
 };
 
 function post(fn, body) {
-  const res = http.post(`${BASE}${FUNCTIONS}/${fn}`, JSON.stringify(body), { headers: { 'Content-Type': 'application/json' } });
+  const headers = { 'Content-Type': 'application/json' };
+  if (TOKEN) headers.Authorization = `Bearer ${TOKEN}`;
+  const res = http.post(`${BASE}${FUNCTIONS}/${fn}`, JSON.stringify(body), { headers });
   check(res, { 'status 2xx': (r) => r.status >= 200 && r.status < 300 });
   if (res.status >= 400) failCounter.add(1);
   return res;

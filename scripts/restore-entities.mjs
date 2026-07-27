@@ -3,16 +3,17 @@
 // bulkCreate generates new ids. Manual review required for FK remapping.
 //
 // Usage: node scripts/restore-entities.mjs backups/<timestamp>
-// Env: BASE44_API_KEY, BASE44_APP_ID
+// Env: BASE44_ADMIN_TOKEN (admin user access token), BASE44_APP_ID. Service role is not available externally; RLS applies.
 // WARNING: restore into an ISOLATED tenant only.
 
 import { createClient } from '@base44/sdk';
 import { readFile, readdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 
-const S = createClient({ apiKey: process.env.BASE44_API_KEY, appId: process.env.BASE44_APP_ID });
+const S = createClient({ appId: process.env.BASE44_APP_ID, token: process.env.BASE44_ADMIN_TOKEN });
 const dir = process.argv[2];
 if (!dir || !existsSync(dir)) { console.error('Usage: node scripts/restore-entities.mjs <backup-dir>'); process.exit(1); }
+if (!process.env.BASE44_ADMIN_TOKEN) { console.error('BLOCKED: BASE44_ADMIN_TOKEN required (service role not available externally).'); process.exit(2); }
 
 const manifest = JSON.parse(await readFile(`${dir}/MANIFEST.json`, 'utf8'));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

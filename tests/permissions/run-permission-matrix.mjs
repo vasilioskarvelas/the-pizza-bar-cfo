@@ -6,7 +6,7 @@
 //   access_token is the Base44 access token obtained after login (auth is SDK/client-side,
 //   so the runner cannot log in for you — supply tokens in creds).
 //
-// Env: FUNCTIONS_PATH (default /_functions) — confirm against your deployed Base44 app.
+// Env: FUNCTIONS_PATH (default /functions) — deployed functions are at /functions/<name> (per Base44 docs).
 //
 // Backend enforcement (HTTP status) is authoritative. Frontend visibility should be
 // tested separately via the Playwright suite (hidden UI does not imply backend security).
@@ -21,7 +21,7 @@ const base = args.base;
 const credsPath = args.credentials;
 if (!base || !credsPath) { console.error('Usage: --base URL --credentials creds.json'); process.exit(1); }
 
-const FN_PATH = process.env.FUNCTIONS_PATH || '/_functions';
+const FN_PATH = process.env.FUNCTIONS_PATH || '/functions'; // docs: deployed functions are at /functions/<name>
 
 const matrix = JSON.parse(readFileSync('tests/permissions/permission-matrix.json', 'utf8'));
 const creds = JSON.parse(readFileSync(credsPath, 'utf8'));
