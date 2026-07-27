@@ -7,6 +7,7 @@ import {
   isoWeekRange, previousWeekRange, reportKey, computeDeltas,
   latestTwoPeriods, metricsAtPeriod, buildSummary, formatEmailBody,
 } from "../../shared/weeklyReportEngine.ts";
+import { loadWeeklyActivity, loadOrgName } from "../../shared/weeklyActivity.ts";
 
 // Phase 10 — generateWeeklyReport: deterministic weekly executive snapshot.
 // Manual (single org) OR scheduled/platform (all orgs × active sites).
@@ -31,7 +32,7 @@ Deno.serve(async (req) => {
     const actor = await resolveActor(base44, body);
     if (actor.unauthorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
     if (actor.forbidden) return Response.json({ error: "Forbidden" }, { status: 403 });
-    const orgName = (await S.Organisation.get(actor.orgId).catch(() => null))?.name || "HFOS";
+    const orgName = await loadOrgName(base44, actor.orgId);
     const out = await generateForOrg(base44, actor.orgId, orgName, { ...body, actor_user_id: actor.actorUserId, is_scheduled: actor.isScheduled });
     return Response.json({ ...out, engine_version: WEEKLY_ENGINE_VERSION });
   } catch (error) {
@@ -91,29 +92,9 @@ async function generateForScope(base44: any, orgId: string, siteId: string | nul
 
   const deltas = computeDeltas(currentMetrics, prevMetrics);
 
-  // Activity within the report week.
-  const weekStartTs = new Date(weekStart + "T00:00:00Z").getTime();
-  const weekEndTs = new Date(weekEnd + "T23:59:59Z").getTime();
-  const inWeek = (iso: string) => { if (!iso) return false; const t = new Date(iso).getTime(); return t >= weekStartTs && t <= weekEndTs; };
-  const scope = (r: any) => (siteId ? r.site_id === siteId : true);
-  const [goalsAll, initsAll, decsAll, alertsAll, oppsAll] = await Promise.all([
-    S.ExecutiveGoal.filter({ organisation_id: orgId }, "-created_date", 500),
-    S.Initiative.filter({ organisation_id: orgId }, "-created_date", 500),
-    S.ExecutiveDecision.filter({ organisation_id: orgId }, "-decision_date", 200),
-    S.ExecutiveAlert.filter({ organisation_id: orgId }, "-created_date", 500),
-    S.Opportunity.filter({ organisation_id: orgId }, "-created_date", 200),
-  ]);
-  const goalsInWeek = goalsAll.filter(scope).filter((g: any) => inWeek(g.created_date) || inWeek(g.updated_date));
-  const initsInWeek = initsAll.filter(scope).filter((i: any) => inWeek(i.created_date) || inWeek(i.updated_date));
-  const decsInWeek = decsAll.filter(scope).filter((d: any) => inWeek(d.decision_date) || inWeek(d.created_date));
-  const alertsInWeek = alertsAll.filter(scope).filter((a: any) => inWeek(a.created_date));
-  const oppsInWeek = oppsAll.filter(scope).filter((o: any) => inWeek(o.created_date) || inWeek(o.updated_date));
-
-  const activity = {
-    alerts: alertsInWeek.length, goals_updated: goalsInWeek.length,
-    initiatives_updated: initsInWeek.length, decisions: decsInWeek.length,
-    opportunities: oppsInWeek.length,
-  };
+  // Activity within the report week (shared loader).
+  const act = await loadWeeklyActivity(base44, { orgId, siteId, weekStart, weekEnd });
+  const { activity, goalsInWeek, initsInWeek, decsInWeek, alertsInWeek, oppsInWeek } = act;
 
   const summary = buildSummary({ weekStart, weekEnd, deltas, activity });
 

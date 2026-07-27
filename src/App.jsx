@@ -62,6 +62,7 @@ import AdminOpportunityRules from '@/pages/admin/OpportunityRules';
 import AdminExecutiveSettings from '@/pages/admin/ExecutiveDashboardSettings';
 import WeeklyReport from '@/pages/WeeklyReport';
 import AdminWeeklyReportConfig from '@/pages/admin/WeeklyReportConfig';
+import AISummary from '@/pages/AISummary';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -106,6 +107,7 @@ const AuthenticatedApp = () => {
       <Route path="/decisions" element={<Decisions />} />
       <Route path="/reports" element={<ExecutiveReports />} />
       <Route path="/weekly-report" element={<WeeklyReport />} />
+      <Route path="/ai-summary" element={<AISummary />} />
       <Route element={<AdminLayout />}>
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/roles" element={<AdminRoles />} />
