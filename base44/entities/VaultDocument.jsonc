@@ -1,0 +1,113 @@
+{
+  "name": "VaultDocument",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "bas",
+        "tax_return",
+        "financial_statement",
+        "insurance",
+        "lease",
+        "contract",
+        "policy",
+        "licence",
+        "certificate",
+        "other"
+      ],
+      "default": "other"
+    },
+    "title": {
+      "type": "string"
+    },
+    "current_version": {
+      "type": "number",
+      "default": 1
+    },
+    "current_file_url": {
+      "type": "string"
+    },
+    "file_size": {
+      "type": "number",
+      "default": 0
+    },
+    "expiry_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "uploaded_by_user_id": {
+      "type": "string"
+    },
+    "access_log": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "archived",
+        "expired"
+      ],
+      "default": "active"
+    },
+    "linked_org_id": {
+      "type": "string"
+    },
+    "linked_site_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "category",
+    "title"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

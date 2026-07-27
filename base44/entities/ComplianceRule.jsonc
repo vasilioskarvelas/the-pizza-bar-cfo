@@ -1,0 +1,80 @@
+{
+  "name": "ComplianceRule",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "rule_key": {
+      "type": "string"
+    },
+    "compliance_type": {
+      "type": "string",
+      "enum": [
+        "bas",
+        "gst",
+        "payg",
+        "super",
+        "payroll",
+        "asic",
+        "annual_review",
+        "business_registration",
+        "insurance",
+        "licence"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "default_reminder_days": {
+      "type": "number",
+      "default": 7
+    },
+    "default_owner_role": {
+      "type": "string"
+    },
+    "default_recurrence": {
+      "type": "string",
+      "enum": [
+        "one_off",
+        "monthly",
+        "quarterly",
+        "yearly"
+      ],
+      "default": "quarterly"
+    },
+    "description": {
+      "type": "string"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "organisation_id",
+    "rule_key",
+    "compliance_type",
+    "title"
+  ],
+  "rls": {
+    "read": {
+      "data.organisation_id": "{{user.data.organisation_id}}"
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

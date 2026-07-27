@@ -1,0 +1,132 @@
+{
+  "name": "ComplianceItem",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "compliance_type": {
+      "type": "string",
+      "enum": [
+        "bas",
+        "gst",
+        "payg",
+        "super",
+        "payroll",
+        "asic",
+        "annual_review",
+        "business_registration",
+        "insurance",
+        "licence"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "reference": {
+      "type": "string"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "amount_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "upcoming",
+        "due_soon",
+        "overdue",
+        "filed",
+        "paid",
+        "done",
+        "waived"
+      ],
+      "default": "upcoming"
+    },
+    "responsible_owner_user_id": {
+      "type": "string"
+    },
+    "evidence_doc_id": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "reminder_days": {
+      "type": "number",
+      "default": 7
+    },
+    "last_reminder_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "recurrence": {
+      "type": "string",
+      "enum": [
+        "one_off",
+        "monthly",
+        "quarterly",
+        "yearly"
+      ],
+      "default": "one_off"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "compliance_type",
+    "title",
+    "due_date"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
