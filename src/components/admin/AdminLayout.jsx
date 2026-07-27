@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import { useAccess, isPlatformAdmin, isOwner } from '@/lib/accessService';
-import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline, Calculator, Coins, Gauge, GitBranch, Receipt, LayoutDashboard, Bell, Sun, Database, Calendar, Sliders, TrendingUp, Target, Rocket, Map as MapIcon, ShieldAlert, Lightbulb, Gavel, FileText, Copy, Layers } from 'lucide-react';
+import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline, Calculator, Coins, Gauge, GitBranch, Receipt, LayoutDashboard, Bell, Sun, Database, Calendar, CalendarClock, Sliders, TrendingUp, Target, Rocket, Map as MapIcon, ShieldAlert, Lightbulb, Gavel, FileText, Copy, Layers } from 'lucide-react';
 
 const NAV = [
   { to: '/admin/users', label: 'Users', icon: Users, perm: null },
@@ -41,6 +41,7 @@ const NAV = [
   { to: '/admin/risk-rules', label: 'Risk Rules', icon: ShieldAlert, perm: null },
   { to: '/admin/opportunity-rules', label: 'Opportunity Rules', icon: Lightbulb, perm: null },
   { to: '/admin/executive-settings', label: 'Exec Settings', icon: Sliders, perm: null },
+  { to: '/admin/weekly-report-config', label: 'Weekly Report', icon: CalendarClock, perm: null },
 ];
 
 export default function AdminLayout() {
@@ -114,6 +115,9 @@ export default function AdminLayout() {
           </Link>
           <Link to="/reports" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
             <FileText className="w-4 h-4" /> Reports
+          </Link>
+          <Link to="/weekly-report" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
+            <CalendarClock className="w-4 h-4" /> Weekly Report
           </Link>
           <Link to="/timeline" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
             <Calendar className="w-4 h-4" /> Timeline

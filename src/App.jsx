@@ -60,6 +60,8 @@ import AdminReportTemplates from '@/pages/admin/ReportTemplates';
 import AdminRiskRules from '@/pages/admin/RiskRules';
 import AdminOpportunityRules from '@/pages/admin/OpportunityRules';
 import AdminExecutiveSettings from '@/pages/admin/ExecutiveDashboardSettings';
+import WeeklyReport from '@/pages/WeeklyReport';
+import AdminWeeklyReportConfig from '@/pages/admin/WeeklyReportConfig';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -103,6 +105,7 @@ const AuthenticatedApp = () => {
       <Route path="/opportunities" element={<Opportunities />} />
       <Route path="/decisions" element={<Decisions />} />
       <Route path="/reports" element={<ExecutiveReports />} />
+      <Route path="/weekly-report" element={<WeeklyReport />} />
       <Route element={<AdminLayout />}>
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/roles" element={<AdminRoles />} />
@@ -140,6 +143,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/risk-rules" element={<AdminRiskRules />} />
         <Route path="/admin/opportunity-rules" element={<AdminOpportunityRules />} />
         <Route path="/admin/executive-settings" element={<AdminExecutiveSettings />} />
+        <Route path="/admin/weekly-report-config" element={<AdminWeeklyReportConfig />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

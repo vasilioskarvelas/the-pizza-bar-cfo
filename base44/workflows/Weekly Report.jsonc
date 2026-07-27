@@ -1,0 +1,48 @@
+{
+  "name": "Weekly Report",
+  "definition": {
+    "document": {
+      "dsl": "1.0.0",
+      "name": "weekly_report",
+      "version": "1.0",
+      "namespace": "base44"
+    },
+    "do": [
+      {
+        "generate": {
+          "call": "invoke_backend_function",
+          "with": {
+            "function_name": "generateWeeklyReport",
+            "args": {
+              "all_orgs": true,
+              "trigger": "scheduled"
+            }
+          },
+          "then": "end",
+          "x-base44": {
+            "title": "Generate weekly report for every organisation",
+            "description": "Deterministic weekly executive snapshot (org + each active site), persisted + notified"
+          }
+        }
+      }
+    ]
+  },
+  "trigger": {
+    "condition": null,
+    "config": {
+      "trigger_type": "scheduled",
+      "events": [],
+      "schedule_mode": "recurring",
+      "cron_expression": "0 8 * * 1",
+      "one_time_date": null,
+      "timezone": "Australia/Melbourne",
+      "interval_value": null,
+      "interval_unit": null,
+      "interval_anchor": null,
+      "ends_type": "never",
+      "ends_on_date": null,
+      "ends_after_count": null
+    }
+  },
+  "description": "Weekly (Monday 08:00 Melbourne) automatic generation of the deterministic weekly executive report for every organisation (consolidated + each active site). Persists a WeeklyReport record, publishes a SystemEvent + AuditLog, and emails the registered owner when WeeklyReportSetting.send_email is enabled. No AI participates."
+}

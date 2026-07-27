@@ -59,6 +59,9 @@ const ENTITY_LIST = [
   { name: 'RiskRule', zone: 'configuration', pattern: 'ORG', immutable: false },
   { name: 'OpportunityRule', zone: 'configuration', pattern: 'ORG', immutable: false },
   { name: 'ExecutiveDashboardSetting', zone: 'configuration', pattern: 'ORG', immutable: false },
+  // configuration — Phase 10 weekly report
+  { name: 'WeeklyReport', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
+  { name: 'WeeklyReportSetting', zone: 'configuration', pattern: 'ORG', immutable: false },
   // source — ingestion
   { name: 'Connector', zone: 'source', pattern: 'ORG+SITE', immutable: false },
   { name: 'ConnectorRun', zone: 'source', pattern: 'ORG+SITE', immutable: false },
@@ -234,7 +237,7 @@ export default function Foundation() {
         </Section>
 
         <footer className="text-center py-6 mt-4 border-t border-zinc-900">
-          <p className="text-xs text-zinc-700">Phase 01 verified · Phase 02 (auth, roles, MFA) verified · Phase 03 (Xero connector & immutable raw ingestion) verified · Phase 04 (canonical model & reconciliation) verified · Phase 05 (deterministic financial &amp; tax engine) verified · Phase 06 (Owner Score calculation engine) verified · Phase 07 (Executive dashboard &amp; Daily Owner Brief) verified · Phase 08 (Financial Timeline, Forecasting &amp; Scenario Engine) verified · Phase 09 (Executive Planning, Goals &amp; Strategic Decision Centre) verified. Next: Phase 10 — Weekly report.</p>
+          <p className="text-xs text-zinc-700">Phase 01 verified · Phase 02 (auth, roles, MFA) verified · Phase 03 (Xero connector & immutable raw ingestion) verified · Phase 04 (canonical model & reconciliation) verified · Phase 05 (deterministic financial &amp; tax engine) verified · Phase 06 (Owner Score calculation engine) verified · Phase 07 (Executive dashboard &amp; Daily Owner Brief) verified · Phase 08 (Financial Timeline, Forecasting &amp; Scenario Engine) verified · Phase 09 (Executive Planning, Goals &amp; Strategic Decision Centre) verified · Phase 10 (Weekly Report) verified. Next: item 10 — Numeric validator &amp; permission-filtered AI context.</p>
         </footer>
       </div>
     </div>
