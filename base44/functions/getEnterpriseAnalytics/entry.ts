@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { resolveEnterpriseActor } from "../../shared/enterpriseShared.ts";
+import { resolveEnterpriseActor, extractOrgMetrics } from "../../shared/enterpriseShared.ts";
 import { benchmark, ENTERPRISE_ENGINE_VERSION } from "../../shared/enterpriseEngine.ts";
 
 // Phase 13 — getEnterpriseAnalytics: cross-organisation comparison + benchmarking.
@@ -33,29 +33,20 @@ Deno.serve(async (req) => {
     ]);
     const scopedOrgs = actor.isPlatformAdmin ? orgs : orgs.filter((o: any) => o.id === actor.orgId);
 
-    const allResults = calcRuns.length ? await base44.asServiceRole.entities.CalculationResult.list() : [];
-    const metricsByOrg: Record<string, Record<string, number>> = {};
-    for (const org of scopedOrgs) {
-      const orgRunIds = new Set(calcRuns.filter((r: any) => r.organisation_id === org.id).map((r: any) => r.id));
-      const orgResults = allResults.filter((r: any) => orgRunIds.has(r.run_id));
-      const latest = orgResults.sort((a: any, b: any) => (b.created_date || "").localeCompare(a.created_date || ""))[0];
-      const m = latest?.metrics || {};
+    const metricsByOrg: Record<string, Record<string, number | null>> = {};
+    await Promise.all(scopedOrgs.map(async (org: any) => {
+      const m = await extractOrgMetrics(base44, org.id, calcRuns);
       const orgGoals = goals.filter((g: any) => g.organisation_id === org.id);
       const achieved = orgGoals.filter((g: any) => g.status === "achieved").length;
       const goalPct = orgGoals.length ? Math.round((achieved / orgGoals.length) * 100) : null;
       const orgRisks = risks.filter((r: any) => r.organisation_id === org.id);
       metricsByOrg[org.id] = {
-        revenue: num(m.revenue ?? m.total_revenue),
-        net_profit: num(m.net_profit ?? m.profit),
-        cash: num(m.cash ?? m.cash_position),
-        labour_pct: num(m.labour_pct ?? m.labour_percent),
-        food_cost_pct: num(m.food_cost_pct ?? m.food_cost_percent),
-        debt: num(m.debt ?? m.total_debt),
-        owner_score: num(m.owner_score),
+        ...m,
         goal_completion_pct: goalPct,
-        open_risks: orgRisks.filter((r: any) => ["open","mitigating"].includes(r.status)).length,
+        open_risks: orgRisks.filter((r: any) => ["open", "mitigating"].includes(r.status)).length,
       };
-    }
+    }));
+
     const benchmarks = benchmark(metricsByOrg, FIELDS);
     return Response.json({
       engine_version: ENTERPRISE_ENGINE_VERSION, generated_at: new Date().toISOString(),
@@ -66,5 +57,3 @@ Deno.serve(async (req) => {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
-
-function num(v: any): number | null { const n = Number(v); return Number.isFinite(n) ? n : null; }

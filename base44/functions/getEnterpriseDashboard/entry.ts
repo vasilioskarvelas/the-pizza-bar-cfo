@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { resolveEnterpriseActor } from "../../shared/enterpriseShared.ts";
+import { resolveEnterpriseActor, extractOrgMetrics } from "../../shared/enterpriseShared.ts";
 import { aggregateDashboard, ENTERPRISE_ENGINE_VERSION } from "../../shared/enterpriseEngine.ts";
 
 // Phase 13 — getEnterpriseDashboard: platform-wide totals + per-org rows.
@@ -24,19 +24,14 @@ Deno.serve(async (req) => {
       base44.asServiceRole.entities.CalculationRun.list(),
     ]);
 
-    // Per-org latest financial snapshot from CalculationResult.
-    const allResults = calcRuns.length ? await base44.asServiceRole.entities.CalculationResult.list() : [];
-    const perOrgMetrics: Record<string, any> = {};
-    for (const org of orgs) {
-      const orgRunIds = new Set(calcRuns.filter((r: any) => r.organisation_id === org.id).map((r: any) => r.id));
-      const orgResults = allResults.filter((r: any) => orgRunIds.has(r.run_id));
-      const latest = orgResults.sort((a: any, b: any) => (b.created_date || "").localeCompare(a.created_date || ""))[0];
-      perOrgMetrics[org.id] = latest?.metrics ? extractMetrics(latest.metrics) : {};
-    }
-
     const scopedOrgs = actor.isPlatformAdmin ? orgs : orgs.filter((o: any) => o.id === actor.orgId);
     const scopedSites = actor.isPlatformAdmin ? sites : sites.filter((s: any) => s.organisation_id === actor.orgId);
     const scopedCompliance = actor.isPlatformAdmin ? compliance : compliance.filter((c: any) => c.organisation_id === actor.orgId);
+
+    const perOrgMetrics: Record<string, any> = {};
+    await Promise.all(scopedOrgs.map(async (org: any) => {
+      perOrgMetrics[org.id] = await extractOrgMetrics(base44, org.id, calcRuns);
+    }));
 
     const dashboard = aggregateDashboard({
       orgs: scopedOrgs, sites: scopedSites, users: profiles, compliance: scopedCompliance,
@@ -47,15 +42,3 @@ Deno.serve(async (req) => {
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
-
-function extractMetrics(metrics: any): any {
-  if (!metrics || typeof metrics !== "object") return {};
-  return {
-    revenue: num(metrics.revenue ?? metrics.total_revenue),
-    net_profit: num(metrics.net_profit ?? metrics.profit),
-    cash: num(metrics.cash ?? metrics.cash_position),
-    owner_score: num(metrics.owner_score),
-    forecast_risk: num(metrics.forecast_risk),
-  };
-}
-function num(v: any): number | null { const n = Number(v); return Number.isFinite(n) ? n : null; }
