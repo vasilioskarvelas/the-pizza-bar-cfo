@@ -62,6 +62,7 @@ E2E_BASE_URL=http://localhost:4173 \
 E2E_USER_EMAIL=... E2E_USER_PASSWORD=... \
 npx playwright test tests/e2e/smoke.spec.js --project=chromium
 ```
+A `playwright.config.js` is included. `beforeAll` logs in once via the UI (using `E2E_USER_*`) and saves a storage state to `tests/e2e/.auth/user.json`; protected tests reuse it. The login-flow and unauthorised-admin tests use fresh unauthenticated contexts.
 Suite covers: login, dashboard, enterprise dashboard/analytics, compliance, document vault, orgs/sites/roles admin, direct route refresh, logout, session expiry, unauthorised admin route, missing route, API-failure/empty/loading states. Fails on uncaught page errors, unexpected console errors, failed critical network requests; screenshots on failure (`tests/e2e/screenshots/`).
 
 ## 8. Load-test commands
@@ -71,15 +72,16 @@ k6 run -e BASE_URL=$APP_URL -e STAGE=normal  tests/k6/load-tests.js
 k6 run -e BASE_URL=$APP_URL -e STAGE=peak    tests/k6/load-tests.js
 k6 run -e BASE_URL=$APP_URL -e STAGE=stress  tests/k6/load-tests.js
 ```
-Profiles: smoke (5 VUs/2m), normal (20 VUs/10m), peak (100 VUs/15m), stress (ramp to failure). Captures rps, avg, p95, p99, error rate, timeouts, rate-limit responses, server failures.
+Set `FUNCTIONS_PATH` (default `/_functions`) if your deployed app exposes backend functions at a different path. Profiles: smoke (5 VUs/2m), normal (20 VUs/10m), peak (100 VUs/15m), stress (ramp to failure). Captures rps, avg, p95, p99, error rate, timeouts, rate-limit responses, server failures.
 Thresholds: reads P95 <2s, dashboards <4s, reports <8s, error rate <1%, zero tenant leakage, zero unhandled errors.
 
 ## 9. Dataset-generation commands
 ```bash
 node scripts/generate-test-dataset.mjs --dry-run            # plan only
-node scripts/generate-test-dataset.mjs --before-counts      # counts only
+node scripts/generate-test-dataset.mjs --before-counts      # lower-bound counts per entity (SDK caps at 1000)
+node scripts/generate-test-dataset.mjs --config=datasets/prod-scale.json   # custom counts
 node scripts/generate-test-dataset.mjs                      # create (isolated tenant!)
-node scripts/generate-test-dataset.mjs --cleanup            # delete created records
+node scripts/generate-test-dataset.mjs --cleanup            # delete the records created this run
 ```
 Defaults: 25 orgs, 150 sites, 500 users (→ invitation manifest, since User records are invite-only), 20k txns, 5k compliance, 2k docs, 500 reports, 500 summaries, 1k runs, 10k results, 1k goals, 1k risks, 500 forecasts, 250 scenarios. Deterministic seed, integer cents, Australian business data, no real customer info, batch + rate-limit + retry, dry-run + cleanup modes. User invitations are written to `manifests/test-accounts.generated.json`.
 

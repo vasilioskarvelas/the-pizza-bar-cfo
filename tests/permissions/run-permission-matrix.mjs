@@ -2,10 +2,15 @@
 // External, Node 20+. Requires provisioned test accounts (see manifests/test-accounts.json).
 //
 // Usage: node tests/permissions/run-permission-matrix.mjs --base https://APP_URL --credentials creds.json
-// creds.json shape: [{ role, email, password, organisation_id, site_id }]
+// creds.json: [{ role, email, access_token, organisation_id, site_id }]
+//   access_token is the Base44 access token obtained after login (auth is SDK/client-side,
+//   so the runner cannot log in for you — supply tokens in creds).
 //
-// Tests BOTH backend function enforcement (HTTP status) and a frontend visibility check
-// (optional, via Playwright reuse) — backend check is authoritative.
+// Env: FUNCTIONS_PATH (default /_functions), ENTITY_API_PATH (default /_api/entities).
+//   Confirm both paths against your deployed Base44 app before relying on results.
+//
+// Backend enforcement (HTTP status) is authoritative. Frontend visibility should be
+// tested separately via the Playwright suite (hidden UI does not imply backend security).
 
 import { readFileSync } from 'node:fs';
 
@@ -17,47 +22,64 @@ const base = args.base;
 const credsPath = args.credentials;
 if (!base || !credsPath) { console.error('Usage: --base URL --credentials creds.json'); process.exit(1); }
 
+const FN_PATH = process.env.FUNCTIONS_PATH || '/_functions';
+const ENTITY_PATH = process.env.ENTITY_API_PATH || '/_api/entities';
+
 const matrix = JSON.parse(readFileSync('tests/permissions/permission-matrix.json', 'utf8'));
 const creds = JSON.parse(readFileSync(credsPath, 'utf8'));
 const byRole = Object.fromEntries(creds.map((c) => [c.role, c]));
 
-const FUNCTION_RESOURCES = new Set(['getEnterpriseAnalytics','getEnterpriseDashboard','runFinancialCalculations',
-  'runOwnerScoreCalculation','generateWeeklyReport','generateAISummary','generateExecutiveReport']);
+// Backend functions that already exist and enforce a specific CRUD action.
+const ACTION_FN = {
+  'Organisation:create': 'createOrganisation', 'Organisation:update': 'updateOrganisation', 'Organisation:delete': 'deleteOrganisation',
+  'Site:create': 'createSite', 'Site:update': 'updateSite', 'Site:delete': 'deleteSite',
+  'ComplianceItem:create': 'createComplianceItem', 'ComplianceItem:update': 'updateComplianceItem',
+  'VaultDocument:upload': 'uploadDocument', 'VaultDocument:download': 'getDocumentVault',
+  'ExecutiveGoal:create': 'createGoal', 'ExecutiveDecision:create': 'createDecision',
+  'User:manage': 'manageAccess', 'Role:manage': 'manageAccess',
+};
+// Page/resource -> read function for view actions.
+const VIEW_FN = { enterprise_dashboard: 'getEnterpriseDashboard', AuditLog: 'getExecutiveDashboard' };
+// Resources that are themselves backend function names (action verbs in the matrix).
+const DIRECT_FN = new Set(['getEnterpriseAnalytics', 'getEnterpriseDashboard', 'runFinancialCalculations',
+  'runOwnerScoreCalculation', 'generateWeeklyReport', 'generateAISummary', 'generateExecutiveReport']);
 
-async function login(c) {
-  const r = await fetch(`${base}/_functions/invokeViaSdkLogin`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: c.email, password: c.password }) }).catch(() => null);
-  // Real auth uses the Base44 auth SDK client-side; this runner assumes an access token is supplied in creds.
-  return c.access_token || null;
-}
+async function call(resource, action, token, orgId, siteId) {
+  const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+  const body = JSON.stringify({ organisation_id: orgId, site_id: siteId, name: 'perm-probe' });
 
-async function checkBackend(role, resource, action, token, orgId, siteId) {
-  if (FUNCTION_RESOURCES.has(resource)) {
-    const res = await fetch(`${base}/_functions/${resource}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ organisation_id: orgId, site_id: siteId }),
-    });
-    const allowed = res.status >= 200 && res.status < 300;
-    return { actual: allowed ? 'allow' : 'deny', status: res.status };
+  if (DIRECT_FN.has(resource)) {
+    const res = await fetch(`${base}${FN_PATH}/${resource}`, { method: 'POST', headers, body }).catch(() => ({ status: 0 }));
+    return { actual: (res.status >= 200 && res.status < 300) ? 'allow' : 'deny', status: res.status, via: 'function' };
   }
-  // CRUD resource: attempt a create/update/delete/read and observe 403 vs 2xx
-  const res = await fetch(`${base}/_functions/${resource}Action`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ action, organisation_id: orgId, site_id: siteId }),
-  }).catch(() => ({ status: 0 }));
-  const allowed = res.status >= 200 && res.status < 300;
-  return { actual: allowed ? 'allow' : 'deny', status: res.status };
+  if (ACTION_FN[`${resource}:${action}`]) {
+    const res = await fetch(`${base}${FN_PATH}/${ACTION_FN[`${resource}:${action}`]}`, { method: 'POST', headers, body }).catch(() => ({ status: 0 }));
+    return { actual: (res.status >= 200 && res.status < 300) ? 'allow' : 'deny', status: res.status, via: 'function' };
+  }
+  if (action === 'view' && VIEW_FN[resource]) {
+    const res = await fetch(`${base}${FN_PATH}/${VIEW_FN[resource]}`, { method: 'POST', headers, body }).catch(() => ({ status: 0 }));
+    return { actual: (res.status >= 200 && res.status < 300) ? 'allow' : 'deny', status: res.status, via: 'function' };
+  }
+  // Entity REST fallback — path must be confirmed against the deployed app.
+  const method = action === 'create' ? 'POST' : action === 'update' ? 'PATCH' : action === 'delete' ? 'DELETE' : 'GET';
+  try {
+    const res = await fetch(`${base}${ENTITY_PATH}/${resource}`, { method, headers });
+    return { actual: (res.status >= 200 && res.status < 300) ? 'allow' : 'deny', status: res.status, via: 'entity-rest' };
+  } catch {
+    return { actual: 'deny', status: 0, via: 'entity-rest-unreachable' };
+  }
 }
 
 (async () => {
   const results = [];
   for (const m of matrix.matrix) {
     const c = byRole[m.role];
-    if (!c) { results.push({ ...m, status: 'blocked', reason: 'no test account' }); continue; }
-    const token = await login(c);
-    const { actual, status } = await checkBackend(m.role, m.resource, m.action, token, c.organisation_id, c.site_id);
+    if (!c) { results.push({ ...m, pass: false, reason: 'no test account' }); console.log(`BLOCK ${m.role.padEnd(20)} ${m.resource.padEnd(28)} ${m.action.padEnd(10)} — no account`); continue; }
+    if (!c.access_token) { results.push({ ...m, pass: false, reason: 'no access_token' }); console.log(`BLOCK ${m.role.padEnd(20)} ${m.resource.padEnd(28)} ${m.action.padEnd(10)} — no token`); continue; }
+    const { actual, status, via } = await call(m.resource, m.action, c.access_token, c.organisation_id, c.site_id);
     const pass = actual === m.expected;
     results.push({ ...m, actual, http_status: status, pass });
-    console.log(`${pass ? 'PASS' : 'FAIL'} ${m.role.padEnd(20)} ${m.resource.padEnd(28)} ${m.action.padEnd(10)} expected=${m.expected} actual=${actual} (${status})`);
+    console.log(`${pass ? 'PASS' : 'FAIL'} ${m.role.padEnd(20)} ${m.resource.padEnd(28)} ${m.action.padEnd(10)} expected=${m.expected} actual=${actual} (${status}, ${via})`);
   }
   const failed = results.filter((r) => r.pass === false);
   console.log(`\n${results.length} checks · ${failed.length} failed`);

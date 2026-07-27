@@ -9,6 +9,8 @@ import { readFileSync } from 'node:fs';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => { const [k, v] = a.split('='); return [k.replace(/^--/, ''), v]; }));
 const base = args.base;
+const FN_PATH = process.env.FUNCTIONS_PATH || '/_functions'; // confirm against your deployed Base44 app
+const ENTITY_PATH = process.env.ENTITY_API_PATH || '/_api/entities';
 const creds = JSON.parse(readFileSync(args.creds, 'utf8'));
 
 const orgA = creds.find((c) => c.organisation === 'A');
@@ -17,11 +19,11 @@ const orgC = creds.find((c) => c.organisation === 'C');
 const all = [orgA, orgB, orgC];
 
 async function call(fn, token, body) {
-  return fetch(`${base}/_functions/${fn}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
+  return fetch(`${base}${FN_PATH}/${fn}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(body) });
 }
 
 async function readEntity(token, entity, id) {
-  return fetch(`${base}/_api/entities/${entity}/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+  return fetch(`${base}${ENTITY_PATH}/${entity}/${id}`, { headers: { Authorization: `Bearer ${token}` } });
 }
 
 let failures = 0;

@@ -31,21 +31,33 @@ export default function ExternalTestResults() {
     try {
       const parsed = JSON.parse(paste);
       const list = Array.isArray(parsed) ? parsed : [parsed];
-      const created = await base44.entities.ExternalTestResult.bulkCreate(list.map((r) => ({
-        test_id: r.test_id || 'unknown',
-        suite: r.suite || 'external',
-        environment: r.environment || '',
-        command: r.command || '',
-        started_at: r.started_at || null,
-        completed_at: r.completed_at || null,
-        exit_code: Number(r.exit_code) || 0,
-        status: ['passed', 'failed', 'blocked'].includes(r.status) ? r.status : 'blocked',
-        metrics: JSON.stringify(r.metrics || {}),
-        errors: JSON.stringify(r.errors || []),
-        evidence: JSON.stringify(r.evidence || []),
-        imported_at: new Date().toISOString(),
-      })));
-      setMsg({ type: 'success', text: `Imported ${created.length} result(s).` });
+      const validStatus = ['passed', 'failed', 'blocked'];
+      const validSuite = ['ci', 'preview', 'e2e', 'permissions', 'isolation', 'load', 'dataset', 'backup', 'scheduled', 'smoke'];
+      const rejected = [];
+      const seen = new Set(results.map((r) => `${r.test_id}|${r.environment || ''}`));
+      const clean = [];
+      for (const r of list) {
+        const id = r.test_id || '(no test_id)';
+        if (!r.test_id || !r.suite || !r.status) { rejected.push(id); continue; }
+        if (!validStatus.includes(r.status) || !validSuite.includes(r.suite)) { rejected.push(id); continue; }
+        const key = `${r.test_id}|${r.environment || ''}`;
+        if (seen.has(key)) { rejected.push(`${id} (duplicate)`); continue; }
+        seen.add(key);
+        clean.push({
+          test_id: r.test_id, suite: r.suite, environment: r.environment || '',
+          command: r.command || '', started_at: r.started_at || null, completed_at: r.completed_at || null,
+          exit_code: Number(r.exit_code) || 0, status: r.status,
+          metrics: JSON.stringify(r.metrics || {}), errors: JSON.stringify(r.errors || []),
+          evidence: JSON.stringify(r.evidence || []), imported_at: new Date().toISOString(),
+        });
+      }
+      if (!clean.length) {
+        setMsg({ type: 'error', text: `No valid results imported. Rejected ${rejected.length}: ${rejected.join(', ')}` });
+        setBusy(false);
+        return;
+      }
+      const created = await base44.entities.ExternalTestResult.bulkCreate(clean);
+      setMsg({ type: 'success', text: `Imported ${created.length}. Rejected ${rejected.length}.` });
       setPaste('');
       load();
     } catch (e) {

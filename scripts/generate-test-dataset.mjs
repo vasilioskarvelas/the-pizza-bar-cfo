@@ -4,8 +4,9 @@
 // Usage:
 //   node scripts/generate-test-dataset.mjs --dry-run
 //   node scripts/generate-test-dataset.mjs --config datasets/prod-scale.json
-//   node scripts/generate-test-dataset.mjs --cleanup          # delete created records
-//   node scripts/generate-test-dataset.mjs --before-counts     # print counts only
+//   node scripts/generate-test-dataset.mjs --before-counts      # lower-bound counts per entity
+//   node scripts/generate-test-dataset.mjs                       # create (isolated tenant!)
+//   node scripts/generate-test-dataset.mjs --cleanup             # delete the records created this run
 //
 // Environment (required for real runs):
 //   BASE44_API_KEY   service-role key with entity write scope
@@ -16,17 +17,21 @@
 // authenticated-user testing is separate from this synthetic data.
 
 import { createClient } from '@base44/sdk';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const S = createClient({ apiKey: process.env.BASE44_API_KEY, appId: process.env.BASE44_APP_ID });
 const DRY = process.argv.includes('--dry-run');
 const CLEANUP = process.argv.includes('--cleanup');
 const COUNTS_ONLY = process.argv.includes('--before-counts');
+const configArg = process.argv.find((a) => a.startsWith('--config='));
+const CONFIG = configArg ? JSON.parse(readFileSync(configArg.split('=')[1], 'utf8')) : {};
 
 const DEFAULTS = {
   organisations: 25, sites: 150, users: 500,
   financial_transactions: 20000, compliance_items: 5000, documents: 2000,
   weekly_reports: 500, ai_summaries: 500, calculation_runs: 1000,
   calculation_results: 10000, goals: 1000, risks: 1000, forecasts: 500, scenarios: 250,
+  ...CONFIG,
 };
 
 // Deterministic PRNG (mulberry32) — reproducible fixtures.
@@ -72,7 +77,6 @@ async function generate() {
   created.sites = await batch('Site', sites, 'site');
   console.log(`sites: ${created.sites.length}`);
 
-  // Compliance items
   const compliance = Array.from({ length: DEFAULTS.compliance_items }, (_, i) => {
     const site = created.sites[i % created.sites.length];
     return { organisation_id: site.organisation_id, site_id: site.id,
@@ -82,7 +86,6 @@ async function generate() {
   });
   created.compliance = await batch('ComplianceItem', compliance, 'compliance');
 
-  // Goals, risks, calc runs/results, weekly reports, AI summaries, docs, forecasts, scenarios
   const goals = Array.from({ length: DEFAULTS.goals }, (_, i) => {
     const site = created.sites[i % created.sites.length];
     return { organisation_id: site.organisation_id, site_id: site.id, title: `Goal ${i + 1}`,
@@ -139,6 +142,23 @@ async function generate() {
   });
   created.docs = await batch('VaultDocument', docs, 'docs');
 
+  const scenarios = Array.from({ length: DEFAULTS.scenarios }, (_, i) => {
+    const site = created.sites[i % created.sites.length];
+    return { organisation_id: site.organisation_id, site_id: site.id, name: `Scenario ${i + 1}`,
+      description: 'Test scenario', status: 'draft', horizon_months: 12,
+      baseline_period_start: '2026-07-01', baseline_period_end: '2026-07-31' };
+  });
+  created.scenarios = await batch('Scenario', scenarios, 'scenarios');
+
+  const forecasts = Array.from({ length: DEFAULTS.forecasts }, (_, i) => {
+    const site = created.sites[i % created.sites.length];
+    return { organisation_id: site.organisation_id, site_id: site.id,
+      horizon_months: 12, baseline_period_start: '2026-07-01', baseline_period_end: '2026-07-31',
+      forecast_hash: `fc-${site.id}-${i}`, engine_version: 'forecast-1.0',
+      generated_at: new Date().toISOString() };
+  });
+  created.forecasts = await batch('ForecastResult', forecasts, 'forecasts');
+
   // Invitation manifest for the 500 users (cannot create User records).
   const invites = Array.from({ length: DEFAULTS.users }, (_, i) => ({
     role: ['platform_owner','enterprise_admin','org_owner','regional_manager','site_manager',
@@ -147,20 +167,20 @@ async function generate() {
     sites: [`Site ${(i % DEFAULTS.sites) + 1}`], expected_permissions: [],
   }));
   if (!DRY) {
-    const fs = await import('node:fs');
-    fs.writeFileSync('manifests/test-accounts.generated.json', JSON.stringify(invites, null, 2));
+    writeFileSync('manifests/test-accounts.generated.json', JSON.stringify(invites, null, 2));
     console.log('wrote manifests/test-accounts.generated.json (invitation placeholders)');
   }
   console.log('Dataset generation complete.', DRY ? '(DRY RUN — nothing written)' : '');
 }
 
 async function cleanup() {
-  for (const [name, arr] of Object.entries(created)) {
-    if (!arr.length) continue;
-    const entity = { orgs: 'Organisation', sites: 'Site', compliance: 'ComplianceItem',
-      goals: 'ExecutiveGoal', risks: 'ExecutiveRisk', runs: 'CalculationRun', results: 'CalculationResult',
-      reports: 'WeeklyReport', summaries: 'AISummary', docs: 'VaultDocument' }[name];
-    if (!entity) continue;
+  const map = { orgs: 'Organisation', sites: 'Site', compliance: 'ComplianceItem',
+    goals: 'ExecutiveGoal', risks: 'ExecutiveRisk', runs: 'CalculationRun', results: 'CalculationResult',
+    reports: 'WeeklyReport', summaries: 'AISummary', docs: 'VaultDocument',
+    forecasts: 'ForecastResult', scenarios: 'Scenario' };
+  for (const [name, entity] of Object.entries(map)) {
+    const arr = created[name];
+    if (!arr || !arr.length) continue;
     for (let i = 0; i < arr.length; i += 500) {
       try { await S.entities[entity].deleteMany({ id: { $in: arr.slice(i, i + 500).map((r) => r.id) } }); }
       catch (e) { console.error(`cleanup ${entity}:`, e.message); }
@@ -170,8 +190,20 @@ async function cleanup() {
   }
 }
 
+async function beforeCounts() {
+  const entities = ['Organisation','Site','ComplianceItem','ExecutiveGoal','ExecutiveRisk','CalculationRun',
+    'CalculationResult','WeeklyReport','AISummary','VaultDocument','Scenario','ForecastResult'];
+  console.log('Lower-bound counts (SDK caps each read at 1000; true counts may be higher):');
+  for (const e of entities) {
+    try {
+      const rows = await S.entities[e].filter({}, '-created_date', 1000);
+      console.log(`  ${e}: ${rows.length}${rows.length >= 1000 ? ' (>=1000, truncated)' : ''}`);
+    } catch (e2) { console.log(`  ${e}: error ${e2.message}`); }
+  }
+}
+
 (async () => {
-  if (COUNTS_ONLY) { console.log('Counts-only mode — implement entity count queries here.'); return; }
+  if (COUNTS_ONLY) { await beforeCounts(); return; }
   await generate();
   if (CLEANUP) await cleanup();
 })().catch((e) => { console.error('FATAL:', e); process.exit(1); });
