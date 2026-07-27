@@ -1,0 +1,91 @@
+{
+  "name": "ExternalTestResult",
+  "type": "object",
+  "properties": {
+    "test_id": {
+      "type": "string"
+    },
+    "suite": {
+      "type": "string",
+      "enum": [
+        "ci",
+        "preview",
+        "e2e",
+        "permissions",
+        "isolation",
+        "load",
+        "dataset",
+        "backup",
+        "scheduled",
+        "smoke"
+      ]
+    },
+    "environment": {
+      "type": "string"
+    },
+    "command": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "exit_code": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed",
+        "blocked"
+      ],
+      "default": "passed"
+    },
+    "metrics": {
+      "type": "string"
+    },
+    "errors": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "string"
+    },
+    "imported_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "test_id",
+    "suite",
+    "status"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,51 @@
+# Phase 14 CI — copy this file to .github/workflows/phase14-ci.yml in your synced repository.
+# (The Base44 GitHub-sync app cannot modify .github/workflows/ directly, so it is stored here
+# and applied on the repo side.)
+name: Phase 14 CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Lint (advisory)
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Production build
+        run: npm run build
+
+      - name: Record build metadata
+        if: always()
+        run: |
+          echo "node: $(node -v)"
+          echo "npm: $(npm -v)"
+
+      - name: Upload dist artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 14
+
+# Type-check and build steps hard-fail the job. Lint is advisory so external
+# test/script artefacts (tests/, scripts/, manifests/) do not block CI; flip to
+# hard-fail once eslint ignores for those dirs are confirmed if desired.

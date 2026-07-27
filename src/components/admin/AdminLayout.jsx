@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import { useAccess, isPlatformAdmin, isOwner } from '@/lib/accessService';
-import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline, Calculator, Coins, Gauge, GitBranch, Receipt, LayoutDashboard, Bell, Sun, Database, Calendar, CalendarClock, Sliders, TrendingUp, Target, Rocket, Map as MapIcon, ShieldAlert, Lightbulb, Gavel, FileText, Copy, Layers, Sparkles, FolderLock, Palette, SlidersHorizontal, ShieldCheck } from 'lucide-react';
+import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline, Calculator, Coins, Gauge, GitBranch, Receipt, LayoutDashboard, Bell, Sun, Database, Calendar, CalendarClock, Sliders, TrendingUp, Target, Rocket, Map as MapIcon, ShieldAlert, Lightbulb, Gavel, FileText, Copy, Layers, Sparkles, FolderLock, Palette, SlidersHorizontal, ShieldCheck, ClipboardCheck } from 'lucide-react';
 
 const NAV = [
   { to: '/admin/users', label: 'Users', icon: Users, perm: null },
@@ -50,6 +50,7 @@ const NAV = [
   { to: '/admin/document-categories', label: 'Doc Categories', icon: FolderLock, perm: null },
   { to: '/admin/branding', label: 'Branding', icon: Palette, perm: null },
   { to: '/admin/platform-settings', label: 'Platform Settings', icon: SlidersHorizontal, perm: null },
+  { to: '/admin/external-test-results', label: 'Test Results', icon: ClipboardCheck, perm: null },
 ];
 
 export default function AdminLayout() {

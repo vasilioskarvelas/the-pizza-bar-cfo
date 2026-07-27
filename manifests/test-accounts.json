@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "description": "Importable manifest of invited test accounts. Replace REQUIRED_TEST_EMAIL with a real, monitored mailbox you control, then invite via the Base44 admin Users screen or base44.users.inviteUser(email, role). Authenticate each account to run the permission and isolation suites.",
+  "accounts": [
+    { "role": "platform_owner", "email": "REQUIRED_TEST_EMAIL", "organisation": "Platform", "sites": [], "expected_permissions": ["*"] },
+    { "role": "enterprise_admin", "email": "REQUIRED_TEST_EMAIL", "organisation": "Organisation A", "sites": ["Site A1", "Site A2"], "expected_permissions": ["enterprise.read", "org.manage", "site.manage", "compliance.manage", "documents.manage", "reports.generate"] },
+    { "role": "org_owner", "email": "REQUIRED_TEST_EMAIL", "organisation": "Organisation A", "sites": ["Site A1", "Site A2"], "expected_permissions": ["goals.manage", "dashboard.read"] },
+    { "role": "regional_manager", "email": "REQUIRED_TEST_EMAIL", "organisation": "Organisation A", "sites": ["Site A1", "Site A2"], "expected_permissions": ["dashboard.read", "goals.read"] },
+    { "role": "site_manager", "email": "REQUIRED_TEST_EMAIL", "organisation": "Organisation A", "sites": ["Site A1"], "expected_permissions": ["site.read", "documents.read"] },
+    { "role": "accountant", "email": "REQUIRED_TEST_EMAIL", "organisation": "Organisation A", "sites": [], "expected_permissions": ["financial.read", "reports.generate"] },
+    { "role": "financial_controller", "email": "REQUIRED_TEST_EMAIL", "organisation": "Organisation A", "sites": [], "expected_permissions": ["financial.read", "calc.run"] },
+    { "role": "operations_manager", "email": "REQUIRED_TEST_EMAIL", "organisation": "Organisation A", "sites": ["Site A1"], "expected_permissions": ["operations.read"] },
+    { "role": "advisor", "email": "REQUIRED_TEST_EMAIL", "organisation": "Organisation A", "sites": [], "expected_permissions": ["dashboard.read"] },
+    { "role": "auditor", "email": "REQUIRED_TEST_EMAIL", "organisation": "Organisation A", "sites": [], "expected_permissions": ["audit.read"] },
+    { "role": "read_only", "email": "REQUIRED_TEST_EMAIL", "organisation": "Organisation A", "sites": [], "expected_permissions": ["dashboard.read"] },
+    { "role": "custom_inherited", "email": "REQUIRED_TEST_EMAIL", "organisation": "Organisation A", "sites": ["Site A1"], "expected_permissions": ["dashboard.read"], "parent_role": "site_manager" }
+  ],
+  "instructions": "1. Create 3 organisations (A, B, C) each with 2 sites in the admin UI. 2. For each account above, invite a real user via Settings → Users → Invite, assign the role and site access. 3. Export authenticated tokens per account (the auth SDK sets the access token after login) and pass them to the permission/isolation runners. 4. Synthetic entity data is separate from these authenticated users — do not conflate them."
+}

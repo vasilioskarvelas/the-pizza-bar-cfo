@@ -74,6 +74,7 @@ import AdminComplianceRules from '@/pages/admin/ComplianceRules';
 import AdminDocumentCategories from '@/pages/admin/DocumentCategories';
 import AdminBranding from '@/pages/admin/Branding';
 import AdminPlatformSettings from '@/pages/admin/PlatformSettings';
+import AdminExternalTestResults from '@/pages/admin/ExternalTestResults';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -168,6 +169,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/document-categories" element={<AdminDocumentCategories />} />
         <Route path="/admin/branding" element={<AdminBranding />} />
         <Route path="/admin/platform-settings" element={<AdminPlatformSettings />} />
+        <Route path="/admin/external-test-results" element={<AdminExternalTestResults />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>

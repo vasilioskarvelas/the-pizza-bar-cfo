@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Phase 14 External Test Result",
+  "description": "Structured format for pasting external test results back into Base44 (Admin → Test Results).",
+  "type": "object",
+  "required": ["test_id", "suite", "status"],
+  "properties": {
+    "test_id": { "type": "string", "description": "Unique test identifier (e.g. ci-build, e2e-login, k6-normal, iso-cross-org-A-B)" },
+    "suite": { "type": "string", "enum": ["ci", "preview", "e2e", "permissions", "isolation", "load", "dataset", "backup", "scheduled", "smoke"] },
+    "environment": { "type": "string", "description": "e.g. github-actions, staging-1, local" },
+    "command": { "type": "string" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "completed_at": { "type": "string", "format": "date-time" },
+    "exit_code": { "type": "number", "default": 0 },
+    "status": { "type": "string", "enum": ["passed", "failed", "blocked"] },
+    "metrics": { "type": "object", "description": "Free-form metrics: rps, p95, p99, error_rate, counts, bundle_size_kb, duration_ms, etc.", "additionalProperties": true },
+    "errors": { "type": "array", "items": { "type": "string" } },
+    "evidence": { "type": "array", "items": { "type": "string" }, "description": "URLs or paths to logs, screenshots, artefacts" }
+  }
+}
