@@ -1,6 +1,6 @@
 # Pagination & Query-Limit Audit — Phase 14
 
-Audit of every entity read for default-result truncation. Base44 SDK `.filter(query, sort, limit)` and `.list(sort, limit)` cap each call; an omitted limit defaults to a small page (≤50–100), silently truncating large result sets.
+Audit of every entity read for default-result truncation. Base44 SDK `.filter(query, sort, limit, skip)` and `.list(sort, limit, skip)` cap each call at **5,000 records** (default **50** when the limit is omitted); an unbounded read silently truncates at 50.
 
 ## Legend
 - **OK** — bounded with an explicit limit and scoped by `organisation_id` (and `site_id` where appropriate).
@@ -43,4 +43,4 @@ Add to `tests/isolation/` / CI:
 3. Seed >1000 CalculationRuns; call `getEnterpriseDashboard`; assert run count reflects pagination or document the truncation.
 
 ## Platform limitation
-The SDK `.filter(query, sort, limit, skip)` **does** expose a `skip` parameter (4th argument, per the Base44 SDK docs), so true pagination is available from the client. The unbounded reads flagged RISK above omit `limit`/`skip` and therefore truncate at the default per-call cap; adding `skip` loops to those engine paths is a future change (not done this phase, per the brief — do not alter deterministic financial/forecast logic without a failing scale test). Until then, the flagged aggregations undercount at >1000 records per entity.
+The SDK `.filter(query, sort, limit, skip)` **does** expose a `skip` parameter (4th argument, per the Base44 SDK docs), so true pagination is available from the client. The unbounded reads flagged RISK above omit `limit`/`skip` and therefore truncate at the default (50); adding `skip` loops to those engine paths is a future change (not done this phase, per the brief — do not alter deterministic financial/forecast logic without a failing scale test). Until then, the flagged aggregations undercount at >1000 records per entity.

@@ -44,7 +44,7 @@ const dir = `backups/${ts}`;
     await writeFile(`${dir}/${name}.json`, JSON.stringify(rows, null, 2));
     const truncated = rows.length >= 1000;
     manifest.push({ entity: name, count: rows.length, truncated, file: `${name}.json` });
-    console.log(`${name}: ${rows.length}${truncated ? ' (may be truncated — SDK page cap)' : ''}`);
+    console.log(`${name}: ${rows.length}${truncated ? ' (may be truncated — script bound 1000; SDK max 5000/call)' : ''}`);
   }
   await writeFile(`${dir}/MANIFEST.json`, JSON.stringify({ exported_at: ts, entity_order: ENTITY_ORDER, entities: manifest }, null, 2));
   console.log(`\nBackup written to ${dir}/`);

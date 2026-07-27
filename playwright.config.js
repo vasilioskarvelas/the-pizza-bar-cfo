@@ -4,7 +4,6 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false, // beforeAll login + shared auth file
-  forbidTimedOut: false,
   timeout: 60000,
   expect: { timeout: 10000 },
   use: {

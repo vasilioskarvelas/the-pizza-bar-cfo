@@ -63,6 +63,9 @@ async function batch(entity, records, label) {
 }
 
 async function generate() {
+  if (DEFAULTS.organisations > 1) {
+    console.warn('NOTE: DEFAULTS.organisations > 1. Org-scoped entities (ExecutiveGoal, ExecutiveRisk, WeeklyReport, AISummary, ForecastResult, Scenario) have RLS create requiring data.organisation_id == the token user\'s own organisation, so they will only be created for the admin token\'s own org; other orgs\' org-scoped records will be rejected (logged) and counts will be low. Use --config=\'{"organisations":1}\' for single-org seeding, or accept per-batch rejections. Full multi-org seeding needs a service-role backend function.');
+  }
   const orgs = Array.from({ length: DEFAULTS.organisations }, (_, i) => ({
     name: `Test Org ${String(i + 1).padStart(2, '0')}`,
     legal_name: `Test Org ${i + 1} Pty Ltd`, organisation_type: 'independent',
@@ -200,7 +203,7 @@ async function cleanup() {
 async function beforeCounts() {
   const entities = ['Organisation','Site','ComplianceItem','ExecutiveGoal','ExecutiveRisk','CalculationRun',
     'CalculationResult','WeeklyReport','AISummary','VaultDocument','Scenario','ForecastResult'];
-  console.log('Lower-bound counts (SDK caps each read at 1000; true counts may be higher):');
+  console.log('Lower-bound counts (scripts bound reads to 1000; SDK max 5000/call, default 50 — true counts may be higher):');
   for (const e of entities) {
     try {
       const rows = await S.entities[e].filter({}, '-created_date', 1000);
