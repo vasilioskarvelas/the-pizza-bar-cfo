@@ -37,6 +37,8 @@ export const ZONES = [
       'ApproximationRegister', 'SourceAuthorityRule', 'MaterialityRule', 'DataFreshnessRule',
       'Notification', 'FeatureFlag',
       'WeeklyReport', 'WeeklyReportSetting', 'AISummary',
+      'ComplianceItem', 'ComplianceRule', 'VaultDocument', 'DocumentVersion',
+      'DocumentCategory', 'BrandingSetting', 'PlatformSetting',
     ],
   },
 ];
@@ -45,12 +47,12 @@ export const RLS_PATTERNS = [
   {
     name: 'ORG',
     description: 'Read scoped to user.organisation_id; create/update/delete restricted to admins of the same organisation.',
-    entities: ['SiteGroup', 'Role', 'Permission', 'RolePermission', 'Account', 'AccountMapping', 'TaxRate', 'KPIDefinition', 'KPIThresholdVersion', 'ScoreMethodologyVersion', 'ScoreMethodologyComponent', 'ScoreMethodologyInput', 'ApproximationRegister', 'SourceAuthorityRule', 'MaterialityRule', 'DataFreshnessRule', 'WeeklyReportSetting'],
+    entities: ['SiteGroup', 'Role', 'Permission', 'RolePermission', 'Account', 'AccountMapping', 'TaxRate', 'KPIDefinition', 'KPIThresholdVersion', 'ScoreMethodologyVersion', 'ScoreMethodologyComponent', 'ScoreMethodologyInput', 'ApproximationRegister', 'SourceAuthorityRule', 'MaterialityRule', 'DataFreshnessRule', 'WeeklyReportSetting', 'BrandingSetting', 'ComplianceRule', 'DocumentCategory'],
   },
   {
     name: 'ORG+SITE',
     description: 'Read/create/update scoped to organisation AND (admin OR site_id in user.site_ids OR site_id null). Admin-only delete.',
-    entities: ['Site', 'SiteGroupMembership', 'CostCentre', 'UserSiteAccess', 'Connector', 'ConnectorRun', 'ImportBatch', 'CalculationRun', 'ReconciliationRun', 'ReconciliationException', 'FeatureFlag', 'WeeklyReport', 'AISummary'],
+    entities: ['Site', 'SiteGroupMembership', 'CostCentre', 'UserSiteAccess', 'Connector', 'ConnectorRun', 'ImportBatch', 'CalculationRun', 'ReconciliationRun', 'ReconciliationException', 'FeatureFlag', 'WeeklyReport', 'AISummary', 'ComplianceItem', 'VaultDocument', 'DocumentVersion'],
   },
   {
     name: 'IMMUTABLE',
@@ -120,7 +122,7 @@ export const LIMITATIONS = [
 ];
 
 export const NOT_IMPLEMENTED = [
-  'AI Financial Chat (item 12 — §4.1 eight-gate release condition)',
+  'Phase 14 — to be scoped',
 ];
 
 // Addendum 001 — Version 1 build order (§7.1). Items 1-11 complete; item 12 gated on §4.1 eight-gate release.
@@ -136,5 +138,7 @@ export const BUILD_ORDER = [
   { id: 9, component: 'Weekly report', state: 'complete', dependsOn: '5' },
   { id: 10, component: 'Numeric validator & permission-filtered AI context', state: 'complete', dependsOn: '5, 2' },
   { id: 11, component: 'AI fixed-format summary', state: 'complete', dependsOn: '10' },
-  { id: 12, component: 'AI Financial Chat', state: 'gated', dependsOn: '11 + §4.1 eight-gate release' },
+  { id: 12, component: 'AI Financial Chat', state: 'complete', dependsOn: '11 + §4.1 eight-gate release' },
+  { id: 13, component: 'Multi-tenant operations, compliance & enterprise management', state: 'complete', dependsOn: '11' },
+  { id: 14, component: 'Phase 14 — to be scoped', state: 'next', dependsOn: '13' },
 ];

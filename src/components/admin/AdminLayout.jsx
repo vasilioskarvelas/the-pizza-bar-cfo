@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import { useAccess, isPlatformAdmin, isOwner } from '@/lib/accessService';
-import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline, Calculator, Coins, Gauge, GitBranch, Receipt, LayoutDashboard, Bell, Sun, Database, Calendar, CalendarClock, Sliders, TrendingUp, Target, Rocket, Map as MapIcon, ShieldAlert, Lightbulb, Gavel, FileText, Copy, Layers, Sparkles } from 'lucide-react';
+import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline, Calculator, Coins, Gauge, GitBranch, Receipt, LayoutDashboard, Bell, Sun, Database, Calendar, CalendarClock, Sliders, TrendingUp, Target, Rocket, Map as MapIcon, ShieldAlert, Lightbulb, Gavel, FileText, Copy, Layers, Sparkles, FolderLock, Palette, SlidersHorizontal, ShieldCheck } from 'lucide-react';
 
 const NAV = [
   { to: '/admin/users', label: 'Users', icon: Users, perm: null },
@@ -42,6 +42,14 @@ const NAV = [
   { to: '/admin/opportunity-rules', label: 'Opportunity Rules', icon: Lightbulb, perm: null },
   { to: '/admin/executive-settings', label: 'Exec Settings', icon: Sliders, perm: null },
   { to: '/admin/weekly-report-config', label: 'Weekly Report', icon: CalendarClock, perm: null },
+  // Phase 13 — Enterprise Management
+  { to: '/admin/organisations', label: 'Organisations', icon: Building2, perm: null },
+  { to: '/admin/sites', label: 'Sites', icon: Building2, perm: null },
+  { to: '/admin/enterprise-roles', label: 'Enterprise Roles', icon: KeyRound, perm: null },
+  { to: '/admin/compliance-rules', label: 'Compliance Rules', icon: ShieldCheck, perm: null },
+  { to: '/admin/document-categories', label: 'Doc Categories', icon: FolderLock, perm: null },
+  { to: '/admin/branding', label: 'Branding', icon: Palette, perm: null },
+  { to: '/admin/platform-settings', label: 'Platform Settings', icon: SlidersHorizontal, perm: null },
 ];
 
 export default function AdminLayout() {
@@ -121,6 +129,15 @@ export default function AdminLayout() {
           </Link>
           <Link to="/ai-summary" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
             <Sparkles className="w-4 h-4" /> AI Summary
+          </Link>
+          <Link to="/enterprise-dashboard" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
+            <Building2 className="w-4 h-4" /> Enterprise
+          </Link>
+          <Link to="/compliance" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
+            <ShieldCheck className="w-4 h-4" /> Compliance
+          </Link>
+          <Link to="/document-vault" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
+            <FolderLock className="w-4 h-4" /> Vault
           </Link>
           <Link to="/timeline" className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-amber-300 hover:bg-zinc-800/50">
             <Calendar className="w-4 h-4" /> Timeline

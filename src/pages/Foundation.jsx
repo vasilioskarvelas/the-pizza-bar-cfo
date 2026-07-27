@@ -63,6 +63,14 @@ const ENTITY_LIST = [
   { name: 'WeeklyReport', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
   { name: 'WeeklyReportSetting', zone: 'configuration', pattern: 'ORG', immutable: false },
   { name: 'AISummary', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
+  // configuration — Phase 13 enterprise management
+  { name: 'ComplianceItem', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
+  { name: 'ComplianceRule', zone: 'configuration', pattern: 'ORG', immutable: false },
+  { name: 'VaultDocument', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
+  { name: 'DocumentVersion', zone: 'configuration', pattern: 'ORG+SITE', immutable: false },
+  { name: 'DocumentCategory', zone: 'configuration', pattern: 'ORG', immutable: false },
+  { name: 'BrandingSetting', zone: 'configuration', pattern: 'ORG', immutable: false },
+  { name: 'PlatformSetting', zone: 'configuration', pattern: 'ORG', immutable: false },
   // source — ingestion
   { name: 'Connector', zone: 'source', pattern: 'ORG+SITE', immutable: false },
   { name: 'ConnectorRun', zone: 'source', pattern: 'ORG+SITE', immutable: false },
@@ -238,7 +246,7 @@ export default function Foundation() {
         </Section>
 
         <footer className="text-center py-6 mt-4 border-t border-zinc-900">
-          <p className="text-xs text-zinc-700">Phase 01 verified · Phase 02 (auth, roles, MFA) verified · Phase 03 (Xero connector & immutable raw ingestion) verified · Phase 04 (canonical model & reconciliation) verified · Phase 05 (deterministic financial &amp; tax engine) verified · Phase 06 (Owner Score calculation engine) verified · Phase 07 (Executive dashboard &amp; Daily Owner Brief) verified · Phase 08 (Financial Timeline, Forecasting &amp; Scenario Engine) verified · Phase 09 (Executive Planning, Goals &amp; Strategic Decision Centre) verified · Phase 10 (Weekly Report) verified · Phase 11 (AI fixed-format summary) verified. Next: item 12 — AI Financial Chat (§4.1 eight-gate release condition).</p>
+          <p className="text-xs text-zinc-700">Phase 01 verified · Phase 02 (auth, roles, MFA) verified · Phase 03 (Xero connector & immutable raw ingestion) verified · Phase 04 (canonical model & reconciliation) verified · Phase 05 (deterministic financial &amp; tax engine) verified · Phase 06 (Owner Score calculation engine) verified · Phase 07 (Executive dashboard &amp; Daily Owner Brief) verified · Phase 08 (Financial Timeline, Forecasting &amp; Scenario Engine) verified · Phase 09 (Executive Planning, Goals &amp; Strategic Decision Centre) verified · Phase 10 (Weekly Report) verified · Phase 11 (AI fixed-format summary) verified · Phase 12 (AI Financial Chat) verified · Phase 13 (Multi-tenant operations, compliance & enterprise management) verified. Next: item 14 — Phase 14 (to be scoped).</p>
         </footer>
       </div>
     </div>

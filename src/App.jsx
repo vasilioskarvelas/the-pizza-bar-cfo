@@ -63,6 +63,17 @@ import AdminExecutiveSettings from '@/pages/admin/ExecutiveDashboardSettings';
 import WeeklyReport from '@/pages/WeeklyReport';
 import AdminWeeklyReportConfig from '@/pages/admin/WeeklyReportConfig';
 import AISummary from '@/pages/AISummary';
+import EnterpriseDashboard from '@/pages/EnterpriseDashboard';
+import EnterpriseAnalytics from '@/pages/EnterpriseAnalytics';
+import ComplianceCentre from '@/pages/ComplianceCentre';
+import DocumentVault from '@/pages/DocumentVault';
+import AdminOrganisations from '@/pages/admin/Organisations';
+import AdminSites from '@/pages/admin/Sites';
+import AdminEnterpriseRoles from '@/pages/admin/EnterpriseRoles';
+import AdminComplianceRules from '@/pages/admin/ComplianceRules';
+import AdminDocumentCategories from '@/pages/admin/DocumentCategories';
+import AdminBranding from '@/pages/admin/Branding';
+import AdminPlatformSettings from '@/pages/admin/PlatformSettings';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -108,6 +119,10 @@ const AuthenticatedApp = () => {
       <Route path="/reports" element={<ExecutiveReports />} />
       <Route path="/weekly-report" element={<WeeklyReport />} />
       <Route path="/ai-summary" element={<AISummary />} />
+      <Route path="/enterprise-dashboard" element={<EnterpriseDashboard />} />
+      <Route path="/enterprise-analytics" element={<EnterpriseAnalytics />} />
+      <Route path="/compliance" element={<ComplianceCentre />} />
+      <Route path="/document-vault" element={<DocumentVault />} />
       <Route element={<AdminLayout />}>
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/roles" element={<AdminRoles />} />
@@ -146,6 +161,13 @@ const AuthenticatedApp = () => {
         <Route path="/admin/opportunity-rules" element={<AdminOpportunityRules />} />
         <Route path="/admin/executive-settings" element={<AdminExecutiveSettings />} />
         <Route path="/admin/weekly-report-config" element={<AdminWeeklyReportConfig />} />
+        <Route path="/admin/organisations" element={<AdminOrganisations />} />
+        <Route path="/admin/sites" element={<AdminSites />} />
+        <Route path="/admin/enterprise-roles" element={<AdminEnterpriseRoles />} />
+        <Route path="/admin/compliance-rules" element={<AdminComplianceRules />} />
+        <Route path="/admin/document-categories" element={<AdminDocumentCategories />} />
+        <Route path="/admin/branding" element={<AdminBranding />} />
+        <Route path="/admin/platform-settings" element={<AdminPlatformSettings />} />
       </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
