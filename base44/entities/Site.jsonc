@@ -14,12 +14,40 @@
     "address": {
       "type": "string"
     },
+    "state": {
+      "type": "string"
+    },
+    "postcode": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string",
+      "default": "AU"
+    },
     "abn": {
+      "type": "string"
+    },
+    "contact_phone": {
+      "type": "string"
+    },
+    "contact_email": {
+      "type": "string"
+    },
+    "manager_user_ids": {
+      "type": "string"
+    },
+    "cost_centre_id": {
       "type": "string"
     },
     "timezone": {
       "type": "string",
       "default": "Australia/Melbourne"
+    },
+    "trading_hours": {
+      "type": "string"
+    },
+    "default_reporting_rules": {
+      "type": "string"
     },
     "business_day_boundary": {
       "type": "string",
@@ -52,61 +80,49 @@
   ],
   "rls": {
     "read": {
-      "$and": [
+      "$or": [
         {
-          "data.organisation_id": "{{user.data.organisation_id}}"
-        },
-        {
-          "$or": [
+          "$and": [
             {
-              "user_condition": {
-                "role": "admin"
-              }
+              "data.organisation_id": "{{user.data.organisation_id}}"
             },
             {
-              "id": {
-                "$in": "{{user.data.site_ids}}"
-              }
+              "$or": [
+                {
+                  "user_condition": {
+                    "role": "admin"
+                  }
+                },
+                {
+                  "id": {
+                    "$in": "{{user.data.site_ids}}"
+                  }
+                }
+              ]
             }
           ]
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
         }
       ]
     },
     "create": {
-      "$and": [
-        {
-          "data.organisation_id": "{{user.data.organisation_id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "update": {
-      "$and": [
-        {
-          "data.organisation_id": "{{user.data.organisation_id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
-      "$and": [
-        {
-          "data.organisation_id": "{{user.data.organisation_id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     }
   }
 }
