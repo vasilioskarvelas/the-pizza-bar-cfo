@@ -8,7 +8,29 @@
     "legal_name": {
       "type": "string"
     },
+    "trading_name": {
+      "type": "string"
+    },
     "abn": {
+      "type": "string"
+    },
+    "parent_id": {
+      "type": "string"
+    },
+    "organisation_type": {
+      "type": "string",
+      "enum": [
+        "independent",
+        "franchise_group",
+        "franchisee",
+        "subsidiary",
+        "practice",
+        "portfolio",
+        "holding"
+      ],
+      "default": "independent"
+    },
+    "industry": {
       "type": "string"
     },
     "status": {
@@ -36,9 +58,25 @@
       "type": "string",
       "default": "Australia/Melbourne"
     },
+    "financial_year_start_month": {
+      "type": "number",
+      "default": 7
+    },
     "data_residency": {
       "type": "string",
       "default": "AU"
+    },
+    "logo_url": {
+      "type": "string"
+    },
+    "branding": {
+      "type": "string"
+    },
+    "tax_settings": {
+      "type": "string"
+    },
+    "settings": {
+      "type": "string"
     }
   },
   "required": [
@@ -46,15 +84,7 @@
   ],
   "rls": {
     "read": {
-      "id": "{{user.data.organisation_id}}"
-    },
-    "create": {
-      "user_condition": {
-        "role": "admin"
-      }
-    },
-    "update": {
-      "$and": [
+      "$or": [
         {
           "id": "{{user.data.organisation_id}}"
         },
@@ -65,6 +95,20 @@
         }
       ]
     },
-    "delete": false
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
   }
 }
