@@ -48,9 +48,14 @@ function assert(cond, msg) { if (!cond) { failures++; console.error('ISOLATION F
     assert((j.items || []).every((i) => i.organisation_id === orgA.organisation_id), 'no Org B compliance leaked to Org A');
   }
 
-  // 3. Direct entity read with a foreign record id.
+  // 3. Direct entity read with a foreign record id. A 404 is INCONCLUSIVE (path
+  //    missing OR record hidden by RLS) — it must NOT count as a pass. Only 403
+  //    (denied) passes; a 2xx with a body is a leak (fail).
   const foreignDoc = await readEntity(orgA.access_token, 'VaultDocument', orgB.doc_id);
-  assert(foreignDoc.status === 403 || foreignDoc.status === 404, 'direct foreign document read denied');
+  if (foreignDoc.status === 200) assert(false, 'direct foreign document read RETURNED data (isolation breach)');
+  else if (foreignDoc.status === 403) assert(true, 'direct foreign document read denied (403)');
+  else if (foreignDoc.status === 404) console.log('INCONCLUSIVE: foreign doc read returned 404 — confirm ENTITY_API_PATH is correct before trusting this check');
+  else assert(false, `direct foreign document read unexpected status ${foreignDoc.status}`);
 
   // 4. Modified site_id — site manager of Site A1 cannot access Site B1.
   const sm = creds.find((c) => c.role === 'site_manager' && c.organisation === 'A');

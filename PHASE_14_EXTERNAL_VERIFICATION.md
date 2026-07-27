@@ -60,6 +60,7 @@ npm i -D @playwright/test
 npx playwright install --with-deps chromium
 E2E_BASE_URL=http://localhost:4173 \
 E2E_USER_EMAIL=... E2E_USER_PASSWORD=... \
+E2E_ADMIN_EMAIL=... E2E_ADMIN_PASSWORD=... \
 npx playwright test tests/e2e/smoke.spec.js --project=chromium
 ```
 A `playwright.config.js` is included. `beforeAll` logs in once via the UI (using `E2E_USER_*`) and saves a storage state to `tests/e2e/.auth/user.json`; protected tests reuse it. The login-flow and unauthorised-admin tests use fresh unauthenticated contexts.
@@ -90,7 +91,7 @@ Defaults: 25 orgs, 150 sites, 500 users (→ invitation manifest, since User rec
 node tests/permissions/run-permission-matrix.mjs --base $APP_URL --credentials creds.json
 # creds.json: [{ role, email, password, access_token, organisation_id, site_id }]
 ```
-Matrix: `tests/permissions/permission-matrix.json` (every role × page/function/action, expected allow/deny). Tests backend enforcement (HTTP status) — authoritative — plus optional frontend visibility via Playwright reuse.
+Matrix: `tests/permissions/permission-matrix.json` (every role × page/function/action, expected allow/deny). Tests backend enforcement (HTTP status) — authoritative. RLS-only rows with no dedicated backend function (AuditLog view, ExecutiveGoal update, ExecutiveRisk create, ComplianceItem delete) are reported as **SKIP**, not failed — verify them via the isolation suite or by confirming the entity REST path externally.
 
 ## 11. Tenant-isolation-test commands
 ```bash
@@ -175,6 +176,7 @@ For every test, paste a result object into **Admin → Test Results** (schema `d
 - SDK `.filter` has no `skip` — pagination beyond ~1000/entity unavailable from the client; enterprise aggregation undercounts at very large scale (see pagination-audit.md).
 - Deterministic financial/forecast runners contain unbounded per-org reads (source records, config, history) — latent truncation risk; **not changed** per the phase brief; load-test regression must prove truncation before any change.
 - No platform-level backup/restore tool — backup is entity export only; auth state, secrets, file binaries, workflow history, point-in-time recovery are not covered.
+- External `@base44/sdk` `createClient` entity method shape (`filter` / `bulkCreate` / `deleteMany`) is assumed; confirm against the installed SDK version before running dataset/backup/restore.
 - Weekly Report scheduled execution not yet observed.
 
 **PHASE 14B PACKAGE READY — EXTERNAL EXECUTION REQUIRED**

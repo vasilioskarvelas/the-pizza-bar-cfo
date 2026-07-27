@@ -44,7 +44,7 @@ const SUBURBS = ['Strathmore','Diggers Rest','Brunswick','Footscray','Preston','
 const STATES = ['VIC','NSW','QLD','WA','SA','TAS'];
 const COMP_TYPES = ['bas','gst','payg','super','payroll','asic','annual_review','insurance','licence'];
 
-const created = { orgs: [], sites: [], compliance: [], goals: [], risks: [], runs: [], results: [], reports: [], summaries: [], docs: [], forecasts: [], scenarios: [] };
+const created = { orgs: [], sites: [], compliance: [], goals: [], risks: [], runs: [], results: [], reports: [], summaries: [], docs: [], txns: [], forecasts: [], scenarios: [] };
 
 async function batch(entity, records, label) {
   const out = [];
@@ -142,6 +142,15 @@ async function generate() {
   });
   created.docs = await batch('VaultDocument', docs, 'docs');
 
+  const txns = Array.from({ length: DEFAULTS.financial_transactions }, (_, i) => {
+    const site = created.sites[i % created.sites.length];
+    const net = Math.round(rnd() * 2000000);
+    return { site_id: site.id, site_name: site.name, business_date: '2026-07-15',
+      gross_sales: net, net_sales: net, net_sales_gst_incl: Math.round(net * 1.1),
+      gst: Math.round(net * 0.1), transaction_count: Math.round(rnd() * 200), channel: 'dine_in' };
+  });
+  created.txns = await batch('SalesTransaction', txns, 'txns');
+
   const scenarios = Array.from({ length: DEFAULTS.scenarios }, (_, i) => {
     const site = created.sites[i % created.sites.length];
     return { organisation_id: site.organisation_id, site_id: site.id, name: `Scenario ${i + 1}`,
@@ -176,7 +185,7 @@ async function generate() {
 async function cleanup() {
   const map = { orgs: 'Organisation', sites: 'Site', compliance: 'ComplianceItem',
     goals: 'ExecutiveGoal', risks: 'ExecutiveRisk', runs: 'CalculationRun', results: 'CalculationResult',
-    reports: 'WeeklyReport', summaries: 'AISummary', docs: 'VaultDocument',
+    reports: 'WeeklyReport', summaries: 'AISummary', docs: 'VaultDocument', txns: 'SalesTransaction',
     forecasts: 'ForecastResult', scenarios: 'Scenario' };
   for (const [name, entity] of Object.entries(map)) {
     const arr = created[name];
@@ -192,7 +201,7 @@ async function cleanup() {
 
 async function beforeCounts() {
   const entities = ['Organisation','Site','ComplianceItem','ExecutiveGoal','ExecutiveRisk','CalculationRun',
-    'CalculationResult','WeeklyReport','AISummary','VaultDocument','Scenario','ForecastResult'];
+    'CalculationResult','WeeklyReport','AISummary','VaultDocument','Scenario','ForecastResult','SalesTransaction'];
   console.log('Lower-bound counts (SDK caps each read at 1000; true counts may be higher):');
   for (const e of entities) {
     try {
