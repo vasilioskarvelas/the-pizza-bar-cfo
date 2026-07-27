@@ -14,14 +14,18 @@ Deno.serve(async (req) => {
     if (actor.unauthorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
     if (!actor.isPlatformAdmin && !actor.orgId) return Response.json({ error: "Forbidden" }, { status: 403 });
 
+    // Bounded reads (limit 1000) — unbounded .list() silently truncates at the SDK
+    // default page cap, undercounting platform-wide totals at scale. NOTE: a single
+    // bounded call cannot page beyond the platform max; full-scale counts (>1000 per
+    // entity) require platform skip-pagination support and remain a documented limit.
     const [orgs, sites, profiles, compliance, weeklyReports, aiSummaries, calcRuns] = await Promise.all([
-      base44.asServiceRole.entities.Organisation.list(),
-      base44.asServiceRole.entities.Site.list(),
-      base44.asServiceRole.entities.UserProfile.list(),
-      base44.asServiceRole.entities.ComplianceItem.list(),
-      base44.asServiceRole.entities.WeeklyReport.list(),
-      base44.asServiceRole.entities.AISummary.list(),
-      base44.asServiceRole.entities.CalculationRun.list(),
+      base44.asServiceRole.entities.Organisation.filter({}, "-created_date", 1000),
+      base44.asServiceRole.entities.Site.filter({}, "-created_date", 1000),
+      base44.asServiceRole.entities.UserProfile.filter({}, "-created_date", 1000),
+      base44.asServiceRole.entities.ComplianceItem.filter({}, "-created_date", 1000),
+      base44.asServiceRole.entities.WeeklyReport.filter({}, "-created_date", 1000),
+      base44.asServiceRole.entities.AISummary.filter({}, "-created_date", 1000),
+      base44.asServiceRole.entities.CalculationRun.filter({}, "-created_date", 1000),
     ]);
 
     const scopedOrgs = actor.isPlatformAdmin ? orgs : orgs.filter((o: any) => o.id === actor.orgId);

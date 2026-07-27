@@ -20,7 +20,7 @@ Deno.serve(async (req) => {
 
     // Platform / scheduled invocation: iterate every organisation.
     if (body.all_orgs) {
-      const orgs = await S.Organisation.list();
+      const orgs = await S.Organisation.filter({}, "-created_date", 1000);
       const results = [];
       for (const org of orgs) {
         try { results.push({ organisation_id: org.id, ...(await generateForOrg(base44, org.id, org.name || "HFOS", body)) }); }
@@ -152,7 +152,7 @@ async function generateForScope(base44: any, orgId: string, siteId: string | nul
         if (u?.email) toEmail = u.email;
       }
       if (!toEmail) {
-        const users = await base44.asServiceRole.entities.User.list();
+        const users = await base44.asServiceRole.entities.User.filter({}, "-created_date", 1000);
         const admin = users.find((u: any) => u.role === "admin" || (u.data || {}).system_role === "owner");
         if (admin?.email) toEmail = admin.email;
       }

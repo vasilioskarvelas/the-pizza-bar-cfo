@@ -10,9 +10,10 @@ Deno.serve(async (req) => {
     const actor = await resolveEnterpriseActor(base44, body);
     if (actor.unauthorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
     if (!actor.isPlatformAdmin && !actor.orgId) return Response.json({ error: "Forbidden" }, { status: 403 });
-    const all = await base44.asServiceRole.entities.Organisation.list();
+    // Bounded reads (limit 1000) — unbounded .list() truncates at the SDK default cap.
+    const all = await base44.asServiceRole.entities.Organisation.filter({}, "-created_date", 1000);
     const scoped = actor.isPlatformAdmin ? all : all.filter((o: any) => o.id === actor.orgId);
-    const sites = await base44.asServiceRole.entities.Site.list();
+    const sites = await base44.asServiceRole.entities.Site.filter({}, "-created_date", 1000);
     const siteCount: Record<string, number> = {};
     for (const s of sites) siteCount[s.organisation_id] = (siteCount[s.organisation_id] || 0) + 1;
     return Response.json({

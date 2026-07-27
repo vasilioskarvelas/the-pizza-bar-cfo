@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
 
     const S = base44.asServiceRole.entities;
     // refresh derived obligations (those with a source_ref); keep manual ones.
-    const existing = await S.FutureObligation.filter({ organisation_id: actor.orgId });
+    const existing = await S.FutureObligation.filter({ organisation_id: actor.orgId }, "-due_date", 1000);
     const toDelete = existing.filter((o) => o.source_ref && (body.site_id ? o.site_id === body.site_id || !o.site_id : true));
     for (const o of toDelete) await S.FutureObligation.delete(o.id).catch(() => {});
     for (const ob of obligations) {

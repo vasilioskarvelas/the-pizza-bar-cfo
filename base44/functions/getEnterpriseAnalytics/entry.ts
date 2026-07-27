@@ -25,11 +25,13 @@ Deno.serve(async (req) => {
     if (actor.unauthorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
     if (!actor.isPlatformAdmin && !actor.orgId) return Response.json({ error: "Forbidden" }, { status: 403 });
 
+    // Bounded reads (limit 1000) — replaces unbounded .list() that silently truncates
+    // at the SDK default page cap. Full-scale (>1000/entity) needs platform pagination.
     const [orgs, calcRuns, goals, risks] = await Promise.all([
-      base44.asServiceRole.entities.Organisation.list(),
-      base44.asServiceRole.entities.CalculationRun.list(),
-      base44.asServiceRole.entities.ExecutiveGoal.list(),
-      base44.asServiceRole.entities.ExecutiveRisk.list(),
+      base44.asServiceRole.entities.Organisation.filter({}, "-created_date", 1000),
+      base44.asServiceRole.entities.CalculationRun.filter({}, "-created_date", 1000),
+      base44.asServiceRole.entities.ExecutiveGoal.filter({}, "-created_date", 1000),
+      base44.asServiceRole.entities.ExecutiveRisk.filter({}, "-created_date", 1000),
     ]);
     const scopedOrgs = actor.isPlatformAdmin ? orgs : orgs.filter((o: any) => o.id === actor.orgId);
 

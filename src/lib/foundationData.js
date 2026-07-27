@@ -140,5 +140,6 @@ export const BUILD_ORDER = [
   { id: 11, component: 'AI fixed-format summary', state: 'complete', dependsOn: '10' },
   { id: 12, component: 'AI Financial Chat', state: 'complete', dependsOn: '11 + §4.1 eight-gate release' },
   { id: 13, component: 'Multi-tenant operations, compliance & enterprise management', state: 'complete', dependsOn: '11' },
-  { id: 14, component: 'Phase 14 — to be scoped', state: 'next', dependsOn: '13' },
+  { id: 14, component: 'Pre-launch validation, load testing & deployment readiness', state: 'in_progress', dependsOn: '13' },
+  { id: 15, component: 'Launch, onboarding & customer operations', state: 'next', dependsOn: '14' },
 ];
