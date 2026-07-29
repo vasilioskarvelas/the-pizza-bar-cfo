@@ -29,7 +29,7 @@ function KpiCard({ card, onDrill }) {
 export default function KpiGrid({ cards, onDrill }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-      {cards.map((c) => <KpiCard key={c.code} card={c} onDrill={onDrill} />)}
+      {(cards || []).map((c) => <KpiCard key={c.code} card={c} onDrill={onDrill} />)}
     </div>
   );
 }
