@@ -59,6 +59,10 @@ export async function latestPeriod(S, orgId) {
 }
 
 export function previousPeriod(periodStart, periodEnd) {
+  // Guard: with no valid period there is nothing to shift. Returning the inputs
+  // (instead of building an Invalid Date and throwing on toISOString) keeps the
+  // dashboard functions from crashing when no calculation period exists yet.
+  if (!periodStart || !periodEnd) return { periodStart: periodStart || null, periodEnd: periodEnd || null };
   const s = new Date(periodStart + "T00:00:00Z");
   const e = new Date(periodEnd + "T00:00:00Z");
   const span = e.getTime() - s.getTime();
