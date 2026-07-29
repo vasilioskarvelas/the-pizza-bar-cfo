@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { resolveActor } from "../../shared/authEvents.ts";
+import { resolveActor, assertOwnership, assertSiteInOrg } from "../../shared/authEvents.ts";
 import { listDecisions, createDecision, updateDecision } from "../../shared/executivePlanningRunner.ts";
 
 // Phase 09 — Decision CRUD (action-based). Variance auto-computed.
@@ -17,10 +17,14 @@ Deno.serve(async (req) => {
       return Response.json({ decisions, count: decisions.length });
     }
     if (body.action === "create") {
+      const siteCheck = await assertSiteInOrg(base44, body.site_id, actor.orgId);
+      if (!siteCheck.ok) return Response.json({ error: siteCheck.error }, { status: siteCheck.status });
       const rec = await createDecision(base44, { orgId: actor.orgId, siteId: body.site_id || null, body, actorUserId: actor.actorUserId });
       return Response.json({ decision: rec });
     }
     if (body.action === "update" && body.decision_id) {
+      const g = await assertOwnership(base44, "ExecutiveDecision", body.decision_id, actor);
+      if (!g.ok) return Response.json({ error: g.error }, { status: g.status });
       const rec = await updateDecision(base44, { orgId: actor.orgId, body, actorUserId: actor.actorUserId });
       return Response.json({ decision: rec });
     }

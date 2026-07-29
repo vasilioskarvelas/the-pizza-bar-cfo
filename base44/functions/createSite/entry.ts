@@ -10,7 +10,10 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const actor = await resolveEnterpriseActor(base44, body);
     if (actor.unauthorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
-    if (!actor.isPlatformAdmin && !actor.orgId) return Response.json({ error: "Forbidden" }, { status: 403 });
+    // M2 + 4.5: creating a site is an org-wide/admin action. Only an organisation
+    // admin (owner/system) or platform admin may create — not any org member. The
+    // cross-organisation guard below still confines org admins to their own org.
+    if (!actor.isOrganisationAdmin) return Response.json({ error: "Forbidden" }, { status: 403 });
     if (!body.name) return Response.json({ error: "name required" }, { status: 400 });
     const orgId = body.organisation_id || (actor.isPlatformAdmin ? null : actor.orgId);
     if (!orgId) return Response.json({ error: "organisation_id required" }, { status: 400 });

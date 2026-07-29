@@ -11,11 +11,20 @@ Deno.serve(async (req) => {
     const actor = await resolveEnterpriseActor(base44, body);
     if (actor.unauthorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
     if (!actor.isPlatformAdmin && !actor.orgId) return Response.json({ error: "Forbidden" }, { status: 403 });
+    // Only a TRUE platform admin may read across organisations; org admins are
+    // org-scoped. Within an org, org admins see all sites; site-restricted users
+    // see only documents for their assigned sites (or org-level, site_id null).
     const orgFilter = actor.isPlatformAdmin && body.organisation_id
       ? { organisation_id: body.organisation_id }
       : actor.isPlatformAdmin ? {} : { organisation_id: actor.orgId };
-    const docs = await base44.asServiceRole.entities.VaultDocument.filter(orgFilter, "-created_date", 500);
-    const versions = await base44.asServiceRole.entities.DocumentVersion.filter(orgFilter, "-uploaded_at", 1000);
+    let docs = await base44.asServiceRole.entities.VaultDocument.filter(orgFilter, "-created_date", 500);
+    let versions = await base44.asServiceRole.entities.DocumentVersion.filter(orgFilter, "-uploaded_at", 1000);
+    if (actor.isSiteRestricted) {
+      const siteIds: string[] = actor.siteIds || [];
+      docs = docs.filter((d: any) => !d.site_id || siteIds.includes(d.site_id));
+      const allowedIds = new Set(docs.map((d: any) => d.id));
+      versions = versions.filter((v: any) => allowedIds.has(v.document_id));
+    }
     const byDoc: Record<string, any[]> = {};
     for (const v of versions) (byDoc[v.document_id] = byDoc[v.document_id] || []).push(v);
     return Response.json({

@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { publishEvent, writeAudit, syncUserSiteCache, EVENT, today } from "../../shared/authEvents.ts";
+import { publishEvent, writeAudit, syncUserSiteCache, EVENT, today, resolveManagedUser, roleAssignmentError, assertSiteInOrg } from "../../shared/authEvents.ts";
 
 // Admin access management. Every action independently validates the caller is an
 // admin/owner of the same organisation (deny-by-default). Writes UserProfile,
@@ -26,6 +26,8 @@ Deno.serve(async (req) => {
     if (action === 'invite') {
       const { email, systemRole = 'site_manager', siteIds = [] } = body;
       if (!email) return Response.json({ error: 'email required' }, { status: 400 });
+      const roleErr = roleAssignmentError(systemRole, caller.role === 'admin');
+      if (roleErr) return Response.json({ error: roleErr.error }, { status: roleErr.status });
       try { await base44.users.inviteUser(email, 'user'); } catch (e) { return Response.json({ error: 'invite failed: ' + e.message }, { status: 400 }); }
       await publishEvent(base44, { orgId, eventKey: EVENT.USER_INVITED, message: `Invited ${email} as ${systemRole}`, actorUserId: actor, details: JSON.stringify({ systemRole, siteIds }) });
       await writeAudit(base44, { orgId, actionType: 'create', entityType: 'User', actorUserId: actor, actorRole: callerRole, afterState: JSON.stringify({ email, systemRole, siteIds }), reason: 'user invited' });
@@ -35,8 +37,21 @@ Deno.serve(async (req) => {
     if (action === 'provision' || action === 'changeRole' || action === 'changeSites') {
       const { userId, email, systemRole, siteIds } = body;
       if (!userId) return Response.json({ error: 'userId required' }, { status: 400 });
-      let target;
-      try { target = await S.User.get(userId); } catch { return Response.json({ error: 'User not found' }, { status: 404 }); }
+      // Deny elevated-role escalation and malformed roles (fail closed).
+      const roleErr = roleAssignmentError(systemRole, caller.role === 'admin');
+      if (roleErr) return Response.json({ error: roleErr.error }, { status: roleErr.status });
+      // Resolve target authoritatively: must be in this org, or an unclaimed
+      // invitee. Foreign/existing users in other orgs are denied (H2 hijack fix).
+      const guard = await resolveManagedUser(base44, userId, orgId, { allowInvitee: true });
+      if (!guard.ok) return Response.json({ error: guard.error }, { status: guard.status });
+      const target = guard.record;
+      // Site grants must reference sites owned by this org.
+      if (Array.isArray(siteIds)) {
+        for (const sid of siteIds) {
+          const sc = await assertSiteInOrg(base44, sid, orgId);
+          if (!sc.ok) return Response.json({ error: sc.error }, { status: sc.status });
+        }
+      }
       let profile = (await S.UserProfile.filter({ organisation_id: orgId, user_id: userId }))[0];
       const profileData = { organisation_id: orgId, user_id: userId, user_email: email || target?.email, system_role: systemRole || profile?.system_role, status: 'active' };
       if (profile) await S.UserProfile.update(profile.id, profileData); else await S.UserProfile.create(profileData);
@@ -70,6 +85,8 @@ Deno.serve(async (req) => {
     if (action === 'disable' || action === 'restore') {
       const { userId } = body;
       if (!userId) return Response.json({ error: 'userId required' }, { status: 400 });
+      const guard = await resolveManagedUser(base44, userId, orgId);
+      if (!guard.ok) return Response.json({ error: guard.error }, { status: guard.status });
       const profile = (await S.UserProfile.filter({ organisation_id: orgId, user_id: userId }))[0];
       if (profile) await S.UserProfile.update(profile.id, { status: action === 'disable' ? 'suspended' : 'active', offboarded_at: action === 'disable' ? new Date().toISOString() : null });
       const uors = await S.UserOrganisationRole.filter({ organisation_id: orgId, user_id: userId });
@@ -90,6 +107,8 @@ Deno.serve(async (req) => {
     if (action === 'setMfaStatus') {
       const { userId, mfaEnrolled } = body;
       if (!userId) return Response.json({ error: 'userId required' }, { status: 400 });
+      const guard = await resolveManagedUser(base44, userId, orgId);
+      if (!guard.ok) return Response.json({ error: guard.error }, { status: guard.status });
       const profile = (await S.UserProfile.filter({ organisation_id: orgId, user_id: userId }))[0];
       if (profile) await S.UserProfile.update(profile.id, { mfa_enrolled: !!mfaEnrolled });
       await publishEvent(base44, { orgId, eventKey: EVENT.MFA_STATUS_CHANGED, entityId: userId, message: `MFA status set to ${!!mfaEnrolled}`, actorUserId: actor });

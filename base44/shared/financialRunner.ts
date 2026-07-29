@@ -193,14 +193,20 @@ export async function runEngine(base44, opts) {
     // the tax-line net_gst_position mirrors it for reporting. Do not double-seed.
     for (const code of Object.keys(raw)) if (raw[code].confs.length) raw[code].confidence = worstConfidence(raw[code].confs);
 
-    // 9. Prior period (revenue growth, opening cash).
+    // 9. Prior period (revenue growth, opening cash, ΔWC for operating cash flow — H6).
+    const PRIOR_CODES = ["revenue", "closing_cash", "total_current_liabilities", "accounts_receivable", "inventory", "other_current_assets"];
     const priorResults = notSuperseded(await S.CalculationResult.filter({ organisation_id: orgId, result_type: "financial_figure" }))
-      .filter((r) => ["revenue", "closing_cash"].includes(r.entity_id) && r.period_end < periodStart &&
+      .filter((r) => PRIOR_CODES.includes(r.entity_id) && r.period_end < periodStart &&
         (siteId ? r.site_id === siteId : true));
-    const priorRev = priorResults.filter((r) => r.entity_id === "revenue").sort((a, b) => (b.created_date || "").localeCompare(a.created_date || ""))[0];
-    const priorCash = priorResults.filter((r) => r.entity_id === "closing_cash").sort((a, b) => (b.created_date || "").localeCompare(a.created_date || ""))[0];
+    const latestPrior = (code) => priorResults.filter((r) => r.entity_id === code).sort((a, b) => (b.created_date || "").localeCompare(a.created_date || ""))[0];
+    const priorRev = latestPrior("revenue");
+    const priorCash = latestPrior("closing_cash");
     ensure("opening_cash").cents += priorCash ? priorCash.value : 0; raw["opening_cash"].confs.push(priorCash ? priorCash.confidence : "forecast");
-    const prior = { revenueCents: priorRev?.value || 0, closingCashCents: priorCash?.value || 0 };
+    // H6: supply prior working capital so operating_cash_flow uses the
+    // period-over-period delta (ΔWC), not the entire current balance each period.
+    const priorTcl = latestPrior("total_current_liabilities")?.value || 0;
+    const priorNoncashCA = (latestPrior("accounts_receivable")?.value || 0) + (latestPrior("inventory")?.value || 0) + (latestPrior("other_current_assets")?.value || 0);
+    const prior = { revenueCents: priorRev?.value || 0, closingCashCents: priorCash?.value || 0, tcl: priorTcl, noncashCA: priorNoncashCA };
 
     // 10. Compute.
     const V = computeAll(raw, prior, companyTaxRate);

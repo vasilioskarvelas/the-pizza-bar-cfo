@@ -18,8 +18,17 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const S = base44.asServiceRole.entities;
 
+    // Phase 14H (H1): authenticate BEFORE any work. The all-orgs (cross-tenant)
+    // path is restricted to a verified platform/scheduled invocation; no such
+    // mechanism is configured, so it is fail-closed. The authenticated single-org
+    // path is unchanged for admins/owners.
+    const actor = await resolveActor(base44, body);
+    if (actor.unauthorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
+    if (actor.forbidden) return Response.json({ error: "Forbidden" }, { status: 403 });
+
     // Platform / scheduled invocation: iterate every organisation.
     if (body.all_orgs) {
+      if (!actor.isScheduled) return Response.json({ error: "Forbidden: all_orgs requires a verified platform invocation" }, { status: 403 });
       const orgs = await S.Organisation.filter({}, "-created_date", 1000);
       const results = [];
       for (const org of orgs) {
@@ -29,9 +38,6 @@ Deno.serve(async (req) => {
       return Response.json({ generated: results, engine_version: WEEKLY_ENGINE_VERSION });
     }
 
-    const actor = await resolveActor(base44, body);
-    if (actor.unauthorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
-    if (actor.forbidden) return Response.json({ error: "Forbidden" }, { status: 403 });
     const orgName = await loadOrgName(base44, actor.orgId);
     const out = await generateForOrg(base44, actor.orgId, orgName, { ...body, actor_user_id: actor.actorUserId, is_scheduled: actor.isScheduled });
     return Response.json({ ...out, engine_version: WEEKLY_ENGINE_VERSION });

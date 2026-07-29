@@ -8,7 +8,7 @@ import {
 } from "./forecastEngine.ts";
 import { computeAll, KPI_FORMULAS, LINES } from "./financialEngine.ts";
 import { parseMethodologyConfig, parseInputConfig } from "./ownerScoreEngine.ts";
-import { publishEvent, writeAudit, now, today } from "./authEvents.ts";
+import { publishEvent, writeAudit, now, today, listAll } from "./authEvents.ts";
 
 // latest result per (entity_id, period) by created_date
 function latestPerKey(results) {
@@ -217,10 +217,17 @@ export async function buildForecast(base44, opts) {
 export async function buildObligations(base44, { orgId, siteId, forecast }) {
   const S = base44.asServiceRole.entities;
   const scope = (r) => (siteId ? r.site_id === siteId || !r.site_id : true);
+  // Phase 14H (C3): PayRun has no organisation_id field, so scope payruns to this
+  // org's own sites to close the cross-tenant payroll leak. (Note: PayRun.list()
+  // remains unbounded — pagination/truncation hardening is tracked separately.)
+  const orgSites = await S.Site.filter({ organisation_id: orgId });
+  const orgSiteIds = new Set((orgSites || []).map((s) => s.id));
   const [commitments, versions, payruns] = await Promise.all([
     S.ManualCommitment.filter({ organisation_id: orgId }),
     S.CommitmentVersion.filter({ organisation_id: orgId }),
-    S.PayRun.list(),
+    // M3: page through PayRun completely (it has no organisation_id to query on,
+    // so we scope by orgSiteIds below) instead of a single truncated .list().
+    listAll(S.PayRun, {}, "-period_end", 500),
   ]);
   const todayStr = today();
   const out = [];
@@ -243,6 +250,7 @@ export async function buildObligations(base44, { orgId, siteId, forecast }) {
 
   // payruns → payroll obligations (next expected)
   for (const p of payruns) {
+    if (!orgSiteIds.has(p.site_id)) continue; // C3: only this org's sites
     if (siteId && p.site_id !== siteId) continue;
     out.push({
       obligation_type: "payroll", name: `Payroll — ${p.site_name || "site"}`,

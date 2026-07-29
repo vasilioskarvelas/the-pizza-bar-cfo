@@ -129,7 +129,7 @@ export function deterministicFallback(opts: {
   if (metrics.net_profit != null && metrics.net_profit < 0) concerns.push(`Net profit is negative at ${fmt$(metrics.net_profit)}.`);
   if (metrics.debt_ratio != null && metrics.debt_ratio > 5000) concerns.push(`Debt ratio ${fmtPct(metrics.debt_ratio)} is elevated.`);
   if (metrics.labour_cost_pct != null && metrics.labour_cost_pct > 3000) concerns.push(`Labour cost ${fmtPct(metrics.labour_cost_pct)} above 30% target.`);
-  if (metrics.cash_runway != null && metrics.cash_runway > 0 && metrics.cash_runway < 60) concerns.push(`Cash runway only ${metrics.cash_runway} days.`);
+  if (metrics.cash_runway != null && metrics.cash_runway > 0 && metrics.cash_runway < 13) concerns.push(`Cash runway only ${metrics.cash_runway} weeks.`);
   if (activity.alerts) concerns.push(`${activity.alerts} open alert(s) this week.`);
   if (!strengths.length) strengths.push("No material deterioration detected in available metrics.");
   if (!concerns.length) concerns.push("Limited prior-period data; trend direction not yet established.");

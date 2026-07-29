@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { today, now, publishEvent, writeAudit } from "../../shared/authEvents.ts";
+import { today, now, publishEvent, writeAudit, resolveActor } from "../../shared/authEvents.ts";
 import {
   reconcileSets, findDuplicates, reconcileConfidence,
 } from "../../shared/canonical.ts";
@@ -20,20 +20,16 @@ const EVT = {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me().catch(() => null);
     const body = await req.json().catch(() => ({}));
-    let orgId = body.organisation_id || null;
-    let actorUserId = "system";
-    if (user) {
-      const d = user.data || {};
-      orgId = orgId || d.organisation_id || user.organisation_id;
-      actorUserId = user.id;
-      const systemRole = d.system_role || user.system_role;
-      const isAdmin = user.role === "admin" || systemRole === "owner" || systemRole === "system";
-      if (!orgId || !isAdmin) return Response.json({ error: "Forbidden" }, { status: 403 });
-    } else if (!orgId) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Phase 14H: authoritative identity via the shared resolver. The client cannot
+    // select the tenant (own org is enforced for non-platform callers), and the
+    // null-user (scheduled) path is fail-closed until a verified platform-auth
+    // mechanism exists — see resolveActor / isTrustedPlatformCall.
+    const actor = await resolveActor(base44, body);
+    if (actor.unauthorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
+    if (actor.forbidden) return Response.json({ error: "Forbidden" }, { status: 403 });
+    const orgId = actor.orgId;
+    const actorUserId = actor.actorUserId;
 
     const S = base44.asServiceRole.entities;
     const periodStart = body.period_start || today();

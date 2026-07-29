@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { runImportPipeline, makeFetch } from "../../shared/ingestion.ts";
+import { isTrustedPlatformCall, redactServiceToken, assertOwnership } from "../../shared/authEvents.ts";
 
 // Manual sync (admin) and scheduled sync (platform-invoke, trigger=scheduled).
 // Manual: requires authenticated admin. Scheduled: no user, trigger must be
@@ -7,9 +8,15 @@ import { runImportPipeline, makeFetch } from "../../shared/ingestion.ts";
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const user = await base44.auth.me().catch(() => null);
     const body = await req.json().catch(() => ({}));
     const trigger = body.trigger || "manual";
+    // Phase 14H: the null-user path is no longer trusted on a client-supplied
+    // `trigger`. A scheduled invocation must be a verified platform call; no such
+    // mechanism is configured, so scheduled sync is fail-closed (denied). The
+    // authenticated admin path continues to work, scoped to the caller's own org.
+    const trustedPlatform = isTrustedPlatformCall(body);
+    redactServiceToken(body);
 
     let orgId = null;
     if (user) {
@@ -19,17 +26,18 @@ Deno.serve(async (req) => {
       const isAdmin = user.role === "admin" || systemRole === "owner" || systemRole === "system";
       if (!orgId || !isAdmin) return Response.json({ error: "Forbidden" }, { status: 403 });
     } else {
-      if (trigger !== "scheduled") return Response.json({ error: "Unauthorized" }, { status: 401 });
+      if (!trustedPlatform || !body.organisation_id) return Response.json({ error: "Unauthorized" }, { status: 401 });
+      orgId = body.organisation_id;
     }
 
     const S = base44.asServiceRole.entities;
     let connectors = [];
     if (body.connector_id) {
-      const c = await S.Connector.get(body.connector_id);
-      if (!c) return Response.json({ error: "Connector not found" }, { status: 404 });
-      connectors = [c];
+      const g = await assertOwnership(base44, "Connector", body.connector_id, { orgId });
+      if (!g.ok) return Response.json({ error: g.error }, { status: g.status });
+      connectors = [g.record];
     } else {
-      connectors = await S.Connector.filter(orgId ? { organisation_id: orgId, status: "active" } : { status: "active" });
+      connectors = await S.Connector.filter({ organisation_id: orgId, status: "active" });
     }
 
     const results = [];

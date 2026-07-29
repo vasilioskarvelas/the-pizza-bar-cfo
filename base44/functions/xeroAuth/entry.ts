@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { publishEvent, writeAudit } from "../../shared/authEvents.ts";
+import { publishEvent, writeAudit, assertOwnership } from "../../shared/authEvents.ts";
 import { CONN_EVENT } from "../../shared/ingestion.ts";
 
 // Xero OAuth 2.0 lifecycle. Real code; returns a clear config error until the
@@ -49,8 +49,10 @@ Deno.serve(async (req) => {
     }
     if (action === "refresh") {
       if (!cid || !csec) return Response.json({ error: "Xero credentials not configured" }, { status: 503 });
-      const conn = await S.Connector.get(body.connector_id);
-      if (!conn || !conn.auth_ref) return Response.json({ error: "connector not authenticated" }, { status: 400 });
+      const g = await assertOwnership(base44, "Connector", body.connector_id, { orgId });
+      if (!g.ok) return Response.json({ error: g.error }, { status: g.status });
+      const conn = g.record;
+      if (!conn.auth_ref) return Response.json({ error: "connector not authenticated" }, { status: 400 });
       const tok = await fetch("https://identity.xero.com/connect/token", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -63,8 +65,9 @@ Deno.serve(async (req) => {
       return Response.json({ ok: true, expires_in: tokens.expires_in });
     }
     if (action === "disconnect") {
-      const conn = await S.Connector.get(body.connector_id);
-      if (!conn) return Response.json({ error: "connector not found" }, { status: 404 });
+      const g = await assertOwnership(base44, "Connector", body.connector_id, { orgId });
+      if (!g.ok) return Response.json({ error: g.error }, { status: g.status });
+      const conn = g.record;
       await S.Connector.update(conn.id, { status: "disabled", auth_ref: null });
       await publishEvent(base44, { orgId: conn.organisation_id, eventKey: CONN_EVENT.DISCONNECTED, entityId: conn.id, message: "Xero disconnected", actorUserId: user.id });
       await writeAudit(base44, { orgId: conn.organisation_id, actionType: "delete", entityType: "Connector", entityId: conn.id, actorUserId: user.id, afterState: "disconnected", reason: "xero disconnect" });

@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { resolveActor } from "../../shared/authEvents.ts";
+import { resolveActor, assertOwnership } from "../../shared/authEvents.ts";
 
 // Phase 08 — updateScenario (thin alias to createScenario update). Kept as a
 // separate endpoint per the function inventory; delegates to the same handler.
@@ -11,6 +11,8 @@ Deno.serve(async (req) => {
     if (actor.unauthorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
     if (actor.forbidden) return Response.json({ error: "Forbidden" }, { status: 403 });
     const S = base44.asServiceRole.entities;
+    const g = await assertOwnership(base44, "Scenario", body.scenario_id, actor);
+    if (!g.ok) return Response.json({ error: g.error }, { status: g.status });
     const update = {};
     for (const f of ["name", "description", "status", "color", "baseline_period_start", "baseline_period_end"]) if (body[f] !== undefined) update[f] = body[f];
     if (body.horizon_months != null) update.horizon_months = Number(body.horizon_months);

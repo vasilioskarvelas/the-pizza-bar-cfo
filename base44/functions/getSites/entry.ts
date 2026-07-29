@@ -10,12 +10,19 @@ Deno.serve(async (req) => {
     const actor = await resolveEnterpriseActor(base44, body);
     if (actor.unauthorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
     if (!actor.isPlatformAdmin && !actor.orgId) return Response.json({ error: "Forbidden" }, { status: 403 });
-    const orgFilter = body.organisation_id ? { organisation_id: body.organisation_id } : {};
+    // Platform admin: all orgs (or an explicitly targeted org). Everyone else is
+    // pinned to their own org; site-restricted users see only their assigned sites,
+    // organisation admins see every site in their own org.
+    const orgFilter = actor.isPlatformAdmin
+      ? (body.organisation_id ? { organisation_id: body.organisation_id } : {})
+      : { organisation_id: actor.orgId };
     const sites = await base44.asServiceRole.entities.Site.filter(orgFilter, "-created_date", 500);
     let scoped = sites;
-    if (!actor.isPlatformAdmin) {
-      const siteIds: string[] = (actor.user && (actor.user.data || {}).site_ids) || [];
+    if (actor.isSiteRestricted) {
+      const siteIds: string[] = actor.siteIds || [];
       scoped = sites.filter((s: any) => s.organisation_id === actor.orgId && (siteIds.length === 0 || siteIds.includes(s.id)));
+    } else if (!actor.isPlatformAdmin) {
+      scoped = sites.filter((s: any) => s.organisation_id === actor.orgId);
     }
     return Response.json({
       sites: scoped.map((s: any) => ({

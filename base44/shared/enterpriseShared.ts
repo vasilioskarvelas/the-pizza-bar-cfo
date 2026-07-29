@@ -2,16 +2,44 @@
 // Platform admins (user.role === 'admin' or system_role owner/system) may act
 // across all organisations; org admins act within their own organisation.
 
+import { isTrustedPlatformCall, redactServiceToken, ELEVATED_ROLES } from "./authEvents.ts";
+
+// Privilege model (Phase 4.5 — three distinct, non-overlapping concepts):
+//   isPlatformAdmin     — TRUE platform operator (user.role === "admin" only); may
+//                         act ACROSS organisations. This is the only cross-org flag.
+//   isOrganisationAdmin — administers all resources within their OWN organisation
+//                         (platform admin, or system_role in ELEVATED_ROLES =
+//                         owner/system). Never confers cross-organisation authority.
+//   isSiteRestricted    — limited to their assigned site_ids.
+// An organisation-level role is NEVER mapped to platform (cross-org) privilege.
 export async function resolveEnterpriseActor(base44: any, body: any) {
+  const trustedPlatform = isTrustedPlatformCall(body);
+  redactServiceToken(body);
   const user = await base44.auth.me().catch(() => null);
   if (user) {
     const d = user.data || {};
-    const isPlatformAdmin = user.role === "admin" || d.system_role === "owner" || d.system_role === "system";
-    const orgId = d.organisation_id || user.organisation_id || body.organisation_id || null;
-    return { user, isPlatformAdmin, orgId, actorUserId: user.id, unauthorized: false };
+    const systemRole = d.system_role || user.system_role || null;
+    const isPlatformAdmin = user.role === "admin";
+    const isOrganisationAdmin = isPlatformAdmin || ELEVATED_ROLES.has(systemRole);
+    // Client cannot select the tenant: body.organisation_id is honoured only for a
+    // TRUE platform admin; every other caller is pinned to their own organisation.
+    const orgId = d.organisation_id || user.organisation_id || (isPlatformAdmin ? body.organisation_id : null) || null;
+    return {
+      user, systemRole,
+      isPlatformAdmin, isOrganisationAdmin, isSiteRestricted: !isOrganisationAdmin,
+      siteIds: d.site_ids || user.site_ids || [],
+      orgId, actorUserId: user.id, unauthorized: false,
+    };
   }
-  // scheduled / platform invocation — must supply orgId for org-scoped work
-  if (body.organisation_id) return { user: null, isPlatformAdmin: true, orgId: body.organisation_id, actorUserId: "system", unauthorized: false };
+  // No authenticated user: trust only a verified platform/scheduled invocation
+  // that presented the service token AND an explicit org. Fail closed otherwise.
+  if (trustedPlatform && body.organisation_id) {
+    return {
+      user: null, systemRole: "system",
+      isPlatformAdmin: true, isOrganisationAdmin: true, isSiteRestricted: false, siteIds: [],
+      orgId: body.organisation_id, actorUserId: "system", unauthorized: false,
+    };
+  }
   return { unauthorized: true };
 }
 

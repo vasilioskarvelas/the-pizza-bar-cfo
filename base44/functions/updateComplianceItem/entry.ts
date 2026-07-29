@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveEnterpriseActor } from "../../shared/enterpriseShared.ts";
-import { writeAudit, publishEvent, now } from "../../shared/authEvents.ts";
+import { writeAudit, publishEvent, now, assertSiteInOrg } from "../../shared/authEvents.ts";
 
 // Phase 13 — updateComplianceItem (status, filing, reminders). Cross-org denied.
 
@@ -14,6 +14,10 @@ Deno.serve(async (req) => {
     const before = await base44.asServiceRole.entities.ComplianceItem.get(body.id);
     if (!before) return Response.json({ error: "compliance item not found" }, { status: 404 });
     if (!actor.isPlatformAdmin && before.organisation_id !== actor.orgId) return Response.json({ error: "Forbidden: cross-organisation update denied" }, { status: 403 });
+    if (body.site_id !== undefined && body.site_id !== null) {
+      const siteCheck = await assertSiteInOrg(base44, body.site_id, before.organisation_id);
+      if (!siteCheck.ok) return Response.json({ error: siteCheck.error }, { status: siteCheck.status });
+    }
     const patch: any = {};
     for (const k of ["site_id","compliance_type","title","reference","due_date","amount_cents","status","responsible_owner_user_id","evidence_doc_id","notes","reminder_days","recurrence","last_reminder_at"]) {
       if (body[k] !== undefined) patch[k] = body[k];

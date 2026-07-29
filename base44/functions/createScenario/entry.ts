@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { resolveActor, writeAudit } from "../../shared/authEvents.ts";
+import { resolveActor, writeAudit, assertOwnership, assertSiteInOrg } from "../../shared/authEvents.ts";
 
 // Phase 08 — Scenario CRUD. Admin-only. Adjustments stored as JSON string.
 
@@ -18,6 +18,8 @@ Deno.serve(async (req) => {
     }
 
     if (body.action === "create") {
+      const siteCheck = await assertSiteInOrg(base44, body.site_id, actor.orgId);
+      if (!siteCheck.ok) return Response.json({ error: siteCheck.error }, { status: siteCheck.status });
       const rec = await S.Scenario.create({
         organisation_id: actor.orgId, site_id: body.site_id || null,
         name: body.name || "Untitled scenario", description: body.description || "",
@@ -30,6 +32,8 @@ Deno.serve(async (req) => {
     }
 
     if (body.action === "update" && body.scenario_id) {
+      const g = await assertOwnership(base44, "Scenario", body.scenario_id, actor);
+      if (!g.ok) return Response.json({ error: g.error }, { status: g.status });
       const update = {};
       for (const f of ["name", "description", "status", "color", "baseline_period_start", "baseline_period_end"]) if (body[f] !== undefined) update[f] = body[f];
       if (body.horizon_months != null) update.horizon_months = Number(body.horizon_months);
@@ -40,6 +44,8 @@ Deno.serve(async (req) => {
     }
 
     if (body.action === "delete" && body.scenario_id) {
+      const g = await assertOwnership(base44, "Scenario", body.scenario_id, actor);
+      if (!g.ok) return Response.json({ error: g.error }, { status: g.status });
       await S.Scenario.delete(body.scenario_id);
       await S.ForecastResult.deleteMany({ scenario_id: body.scenario_id }).catch(() => {});
       await writeAudit(base44, { orgId: actor.orgId, actionType: "delete", entityType: "Scenario", entityId: body.scenario_id, actorUserId: actor.actorUserId, reason: "scenario deleted" });

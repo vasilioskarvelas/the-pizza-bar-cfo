@@ -19,7 +19,7 @@ export const METRIC_META: Record<string, any> = {
   net_profit: { label: "Net Profit", unit: "cents", direction: "maximize" },
   cash: { label: "Cash", unit: "cents", direction: "maximize" },
   closing_cash: { label: "Closing Cash", unit: "cents", direction: "maximize" },
-  cash_runway: { label: "Cash Runway", unit: "days", direction: "maximize" },
+  cash_runway: { label: "Cash Runway", unit: "weeks", direction: "maximize" },
   working_capital: { label: "Working Capital", unit: "cents", direction: "maximize" },
   current_ratio: { label: "Current Ratio", unit: "ratio_4dp", direction: "maximize" },
   debt_ratio: { label: "Debt Ratio", unit: "bps", direction: "minimize" },

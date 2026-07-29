@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveActor } from "../../shared/authEvents.ts";
-import { defaultPeriod, latestPeriod, buildKpiCards, buildOwnerScore, reconciliationSummary, connectorSummary, generateAlerts, upsertAlerts } from "../../shared/dashboardShared.ts";
+import { defaultPeriod, latestPeriod, previousPeriod, buildKpiCards, buildOwnerScore, reconciliationSummary, connectorSummary, generateAlerts, upsertAlerts } from "../../shared/dashboardShared.ts";
 import { getCurrentResults } from "../../shared/financialRunner.ts";
 
 // Phase 07 — getDashboardAlerts: regenerate + persist rule-based alerts, return merged list.
@@ -15,10 +15,11 @@ Deno.serve(async (req) => {
 
     const period = (body.period_start && body.period_end) ? { periodStart: body.period_start, periodEnd: body.period_end } : await latestPeriod(base44.asServiceRole.entities, actor.orgId);
     const siteId = body.site_id || null;
+    const prev = previousPeriod(period.periodStart, period.periodEnd); // L1: prior-period comparison
 
     const [currentRes, prevRes, ownerScore, recon, connectors, calcRuns] = await Promise.all([
       getCurrentResults(base44, { orgId: actor.orgId, siteId, periodStart: period.periodStart, periodEnd: period.periodEnd }),
-      getCurrentResults(base44, { orgId: actor.orgId, siteId, periodStart: period.periodStart, periodEnd: period.periodEnd }),
+      getCurrentResults(base44, { orgId: actor.orgId, siteId, periodStart: prev.periodStart, periodEnd: prev.periodEnd }),
       buildOwnerScore(base44, actor.orgId, siteId, period.periodStart, period.periodEnd),
       reconciliationSummary(base44.asServiceRole.entities, actor.orgId, siteId, period.periodStart, period.periodEnd),
       connectorSummary(base44.asServiceRole.entities, actor.orgId, siteId),

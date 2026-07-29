@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { resolveActor } from "../../shared/authEvents.ts";
+import { resolveActor, assertOwnership, assertSiteInOrg } from "../../shared/authEvents.ts";
 import { listGoals, createGoal, updateGoal, deleteGoal } from "../../shared/executivePlanningRunner.ts";
 
 // Phase 09 — Goal CRUD (action-based). Admin or owner.
@@ -17,14 +17,20 @@ Deno.serve(async (req) => {
       return Response.json({ goals, count: goals.length });
     }
     if (body.action === "create") {
+      const siteCheck = await assertSiteInOrg(base44, body.site_id, actor.orgId);
+      if (!siteCheck.ok) return Response.json({ error: siteCheck.error }, { status: siteCheck.status });
       const rec = await createGoal(base44, { orgId: actor.orgId, siteId: body.site_id || null, body, actorUserId: actor.actorUserId });
       return Response.json({ goal: rec });
     }
     if (body.action === "update" && body.goal_id) {
+      const g = await assertOwnership(base44, "ExecutiveGoal", body.goal_id, actor);
+      if (!g.ok) return Response.json({ error: g.error }, { status: g.status });
       const rec = await updateGoal(base44, { orgId: actor.orgId, body, actorUserId: actor.actorUserId });
       return Response.json({ goal: rec });
     }
     if (body.action === "delete" && body.goal_id) {
+      const g = await assertOwnership(base44, "ExecutiveGoal", body.goal_id, actor);
+      if (!g.ok) return Response.json({ error: g.error }, { status: g.status });
       const res = await deleteGoal(base44, { orgId: actor.orgId, body, actorUserId: actor.actorUserId });
       return Response.json(res);
     }

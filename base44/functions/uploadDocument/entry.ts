@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
 import { resolveEnterpriseActor } from "../../shared/enterpriseShared.ts";
-import { writeAudit, publishEvent, now } from "../../shared/authEvents.ts";
+import { writeAudit, publishEvent, now, assertSiteInOrg } from "../../shared/authEvents.ts";
 
 // Phase 13 — uploadDocument: receives a file, uploads it, and either creates a
 // new VaultDocument (version 1) or appends a DocumentVersion to an existing one.
@@ -43,6 +43,8 @@ Deno.serve(async (req) => {
       return Response.json({ document: { id: body.document_id, current_version: nextVersion, file_url: fileUrl } });
     }
 
+    const siteCheck = await assertSiteInOrg(base44, body.site_id, orgId);
+    if (!siteCheck.ok) return Response.json({ error: siteCheck.error }, { status: siteCheck.status });
     const doc = await base44.asServiceRole.entities.VaultDocument.create({
       organisation_id: orgId, site_id: body.site_id || null, category: body.category, title: body.title,
       current_version: 1, current_file_url: fileUrl, file_size: fileSize, expiry_date: body.expiry_date || null,

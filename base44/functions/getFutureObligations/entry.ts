@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.40';
-import { resolveActor, writeAudit } from "../../shared/authEvents.ts";
+import { resolveActor, writeAudit, assertSiteInOrg } from "../../shared/authEvents.ts";
 import { loadForecastInputs, buildForecast, buildObligations } from "../../shared/forecastRunner.ts";
 
 // Phase 08 — getFutureObligations: deterministic scheduled obligations, upserted
@@ -11,6 +11,8 @@ Deno.serve(async (req) => {
     const actor = await resolveActor(base44, body);
     if (actor.unauthorized) return Response.json({ error: "Unauthorized" }, { status: 401 });
     if (actor.forbidden) return Response.json({ error: "Forbidden" }, { status: 403 });
+    const siteCheck = await assertSiteInOrg(base44, body.site_id, actor.orgId);
+    if (!siteCheck.ok) return Response.json({ error: siteCheck.error }, { status: siteCheck.status });
     const horizon = Number(body.horizon) || 12;
     const inp = await loadForecastInputs(base44, { orgId: actor.orgId, siteId: body.site_id || null, periodStart: body.period_start, period_end: body.period_end });
     const forecast = await buildForecast(base44, { inputs: inp, horizon, actorUserId: actor.actorUserId, useCache: true });
