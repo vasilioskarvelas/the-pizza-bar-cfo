@@ -1,13 +1,14 @@
 import React from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
 import { useAccess, isPlatformAdmin, isOwner } from '@/lib/accessService';
-import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline, Calculator, Coins, Gauge, GitBranch, Receipt, LayoutDashboard, Bell, Sun, Database, Calendar, CalendarClock, Sliders, TrendingUp, Target, Rocket, Map as MapIcon, ShieldAlert, Lightbulb, Gavel, FileText, Copy, Layers, Sparkles, FolderLock, Palette, SlidersHorizontal, ShieldCheck, ClipboardCheck } from 'lucide-react';
+import { Shield, Users, KeyRound, Lock, Building2, ScrollText, ArrowLeft, Plug, History, Activity, GitCompareArrows, AlertTriangle, BookMarked, Spline, Calculator, Coins, Gauge, GitBranch, Receipt, LayoutDashboard, Bell, Sun, Database, Calendar, CalendarClock, Sliders, TrendingUp, Target, Rocket, Map as MapIcon, ShieldAlert, Lightbulb, Gavel, FileText, Copy, Layers, Sparkles, FolderLock, Palette, SlidersHorizontal, ShieldCheck, ClipboardCheck, Upload } from 'lucide-react';
 
 const NAV = [
   { to: '/admin/users', label: 'Users', icon: Users, perm: null },
   { to: '/admin/roles', label: 'Roles', icon: KeyRound, perm: null },
   { to: '/admin/permissions', label: 'Permissions', icon: Lock, perm: null },
   { to: '/admin/site-access', label: 'Site Access', icon: Building2, perm: null },
+  { to: '/admin/import-data', label: 'Import Data', icon: Upload, perm: null },
   { to: '/admin/security', label: 'Security Status', icon: ScrollText, perm: 'audit.read' },
   { to: '/admin/connectors', label: 'Connectors', icon: Plug, perm: null },
   { to: '/admin/imports', label: 'Import History', icon: History, perm: null },

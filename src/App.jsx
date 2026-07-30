@@ -18,6 +18,7 @@ import AdminSiteAccess from '@/pages/admin/SiteAccess';
 import AdminSecurity from '@/pages/admin/SecurityStatus';
 import AdminConnectors from '@/pages/admin/Connectors';
 import AdminImports from '@/pages/admin/ImportHistory';
+import AdminImportData from '@/pages/admin/ImportData';
 import AdminSync from '@/pages/admin/SyncStatus';
 import AdminReconciliation from '@/pages/admin/ReconciliationQueue';
 import AdminExceptions from '@/pages/admin/Exceptions';
@@ -134,6 +135,7 @@ const AuthenticatedApp = () => {
         <Route path="/admin/security" element={<AdminSecurity />} />
         <Route path="/admin/connectors" element={<AdminConnectors />} />
         <Route path="/admin/imports" element={<AdminImports />} />
+        <Route path="/admin/import-data" element={<AdminImportData />} />
         <Route path="/admin/sync" element={<AdminSync />} />
         <Route path="/admin/reconciliation" element={<AdminReconciliation />} />
         <Route path="/admin/exceptions" element={<AdminExceptions />} />
