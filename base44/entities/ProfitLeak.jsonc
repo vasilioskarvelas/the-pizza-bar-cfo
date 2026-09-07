@@ -8,57 +8,171 @@
     "business_id": {
       "type": "string"
     },
+    "location_id": {
+      "type": "string"
+    },
+    "industry": {
+      "type": "string",
+      "default": "hospitality"
+    },
+    "leak_key": {
+      "type": "string"
+    },
     "category": {
       "type": "string",
       "enum": [
-        "excess_labour",
-        "supplier_price_increase",
-        "underpriced_products",
-        "overdue_invoices",
-        "unused_subscriptions",
+        "labour",
+        "supplier_price",
+        "underpriced_product",
+        "overdue_receivables",
+        "unused_subscription",
+        "duplicate_subscription",
         "merchant_fees",
-        "duplicate_expenses",
-        "unusual_expenses",
+        "duplicate_expense",
+        "unusual_expense",
+        "expense_creep",
+        "low_margin_channel",
+        "excessive_discounting",
         "waste",
-        "poor_sales_channels",
-        "low_margin_products",
-        "excessive_discounts",
-        "unprofitable_customers",
-        "unprofitable_jobs"
+        "unprofitable_customer",
+        "unprofitable_job",
+        "cash_flow_risk"
       ]
+    },
+    "leak_type": {
+      "type": "string"
     },
     "title": {
       "type": "string"
     },
-    "estimated_monthly_value_cents": {
+    "explanation": {
+      "type": "string"
+    },
+    "detected_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "analysis_period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "analysis_period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "baseline_period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "baseline_period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "current_value": {
       "type": "number",
       "default": 0
     },
-    "status": {
+    "baseline_value": {
+      "type": "number",
+      "default": 0
+    },
+    "variance": {
+      "type": "number",
+      "default": 0
+    },
+    "variance_pct": {
+      "type": "number",
+      "default": 0
+    },
+    "weekly_impact_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "monthly_impact_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "annual_impact_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "confidence_score": {
+      "type": "number",
+      "default": 0
+    },
+    "severity": {
       "type": "string",
       "enum": [
-        "identified",
-        "approved",
-        "realised",
-        "dismissed"
+        "critical",
+        "high",
+        "medium",
+        "low"
       ],
-      "default": "identified"
+      "default": "medium"
     },
     "evidence": {
+      "type": "string"
+    },
+    "source_systems": {
       "type": "string"
     },
     "recommended_action": {
       "type": "string"
     },
-    "detail": {
+    "action_difficulty": {
+      "type": "string",
+      "enum": [
+        "easy",
+        "medium",
+        "hard"
+      ],
+      "default": "medium"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "identified",
+        "reviewed",
+        "approved",
+        "actioned",
+        "verified",
+        "realised",
+        "dismissed"
+      ],
+      "default": "identified"
+    },
+    "first_detected": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_detected": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "peak_impact_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "resolved_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "realised_value_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "dismissal_reason": {
       "type": "string"
     }
   },
   "required": [
     "organisation_id",
     "business_id",
+    "leak_key",
     "category",
-    "title"
+    "title",
+    "severity",
+    "status"
   ],
   "rls": {
     "read": {

@@ -1,0 +1,90 @@
+{
+  "name": "ChannelSale",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "business_id": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "in_store",
+        "pickup",
+        "direct_online",
+        "uber_eats",
+        "doordash",
+        "menulog"
+      ]
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "revenue_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "discounts_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "commission_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "packaging_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "refunds_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "direct_costs_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "contribution_cents": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "organisation_id",
+    "business_id",
+    "channel",
+    "date"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

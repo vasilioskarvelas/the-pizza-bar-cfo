@@ -1,0 +1,85 @@
+{
+  "name": "ExpenseTransaction",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "business_id": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "supplier",
+        "utilities",
+        "subscriptions",
+        "insurance",
+        "merchant_fees",
+        "payroll",
+        "software",
+        "rent",
+        "finance",
+        "advertising",
+        "misc"
+      ]
+    },
+    "supplier": {
+      "type": "string"
+    },
+    "amount_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "description": {
+      "type": "string"
+    },
+    "reference": {
+      "type": "string"
+    },
+    "recurring": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "organisation_id",
+    "business_id",
+    "category",
+    "amount_cents",
+    "date"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
