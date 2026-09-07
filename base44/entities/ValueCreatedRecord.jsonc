@@ -1,0 +1,65 @@
+{
+  "name": "ValueCreatedRecord",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "business_id": {
+      "type": "string"
+    },
+    "month": {
+      "type": "string"
+    },
+    "potential_identified_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "actions_approved_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "verified_realised_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "subscription_cost_cents": {
+      "type": "number",
+      "default": 39900
+    }
+  },
+  "required": [
+    "organisation_id",
+    "business_id",
+    "month"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

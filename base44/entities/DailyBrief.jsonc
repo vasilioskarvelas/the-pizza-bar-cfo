@@ -1,0 +1,75 @@
+{
+  "name": "DailyBrief",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "business_id": {
+      "type": "string"
+    },
+    "brief_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "revenue": {
+      "type": "number",
+      "default": 0
+    },
+    "estimated_profit": {
+      "type": "number",
+      "default": 0
+    },
+    "labour_pct": {
+      "type": "number",
+      "default": 0
+    },
+    "cogs_pct": {
+      "type": "number",
+      "default": 0
+    },
+    "summary_text": {
+      "type": "string"
+    },
+    "attention_items": {
+      "type": "string"
+    },
+    "recommended_actions": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "business_id",
+    "brief_date"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

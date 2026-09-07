@@ -9,6 +9,20 @@ import ScrollToTop from './components/ScrollToTop';
 import ErrorBoundary from './components/ErrorBoundary';
 import FloatingHomeButton from './components/FloatingHomeButton';
 // Add page imports here
+import AutopilotLayout from '@/components/autopilot/AutopilotLayout';
+import AutopilotOverview from '@/pages/autopilot/Overview';
+import AutopilotDailyBrief from '@/pages/autopilot/DailyBrief';
+import AutopilotProfitLeaks from '@/pages/autopilot/ProfitLeaks';
+import AutopilotCashFlow from '@/pages/autopilot/CashFlow';
+import AutopilotRevenue from '@/pages/autopilot/Revenue';
+import AutopilotExpenses from '@/pages/autopilot/Expenses';
+import AutopilotLabour from '@/pages/autopilot/Labour';
+import AutopilotProfitability from '@/pages/autopilot/Profitability';
+import AutopilotAskMyBusiness from '@/pages/autopilot/AskMyBusiness';
+import AutopilotActionCentre from '@/pages/autopilot/ActionCentre';
+import AutopilotValueCreated from '@/pages/autopilot/ValueCreated';
+import AutopilotIntegrations from '@/pages/autopilot/Integrations';
+import AutopilotSettings from '@/pages/autopilot/Settings';
 import Foundation from '@/pages/Foundation';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminUsers from '@/pages/admin/Users';
@@ -104,7 +118,22 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       {/* Add your page Route elements here */}
-      <Route path="/" element={<Dashboard />} />
+      <Route element={<AutopilotLayout />}>
+        <Route path="/" element={<AutopilotOverview />} />
+        <Route path="/daily-brief" element={<AutopilotDailyBrief />} />
+        <Route path="/profit-leaks" element={<AutopilotProfitLeaks />} />
+        <Route path="/cash-flow" element={<AutopilotCashFlow />} />
+        <Route path="/revenue" element={<AutopilotRevenue />} />
+        <Route path="/expenses" element={<AutopilotExpenses />} />
+        <Route path="/labour" element={<AutopilotLabour />} />
+        <Route path="/profitability" element={<AutopilotProfitability />} />
+        <Route path="/ask" element={<AutopilotAskMyBusiness />} />
+        <Route path="/actions" element={<AutopilotActionCentre />} />
+        <Route path="/value" element={<AutopilotValueCreated />} />
+        <Route path="/integrations" element={<AutopilotIntegrations />} />
+        <Route path="/settings" element={<AutopilotSettings />} />
+      </Route>
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/foundation" element={<Foundation />} />
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/timeline" element={<Timeline />} />

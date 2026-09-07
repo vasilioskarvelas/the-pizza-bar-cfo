@@ -1,0 +1,94 @@
+{
+  "name": "ActionItem",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "business_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "chase_invoice",
+        "supplier_quote",
+        "review_roster",
+        "review_pricing",
+        "cancel_subscription",
+        "investigate_expense",
+        "negotiate_merchant_fees",
+        "contact_supplier",
+        "review_low_margin_item",
+        "other"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "review",
+        "approved",
+        "in_progress",
+        "completed",
+        "dismissed"
+      ],
+      "default": "new"
+    },
+    "estimated_value_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "linked_leak_id": {
+      "type": "string"
+    },
+    "assignee": {
+      "type": "string"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "business_id",
+    "title",
+    "action_type"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

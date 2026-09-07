@@ -1,0 +1,113 @@
+{
+  "name": "MetricSnapshot",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "business_id": {
+      "type": "string"
+    },
+    "location_id": {
+      "type": "string"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_type": {
+      "type": "string",
+      "enum": [
+        "day",
+        "week",
+        "month"
+      ],
+      "default": "day"
+    },
+    "revenue": {
+      "type": "number",
+      "default": 0
+    },
+    "gross_profit": {
+      "type": "number",
+      "default": 0
+    },
+    "operating_profit": {
+      "type": "number",
+      "default": 0
+    },
+    "cash_position": {
+      "type": "number",
+      "default": 0
+    },
+    "labour_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "cogs_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "labour_pct": {
+      "type": "number",
+      "default": 0
+    },
+    "cogs_pct": {
+      "type": "number",
+      "default": 0
+    },
+    "outstanding_receivables": {
+      "type": "number",
+      "default": 0
+    },
+    "bills_due": {
+      "type": "number",
+      "default": 0
+    },
+    "tax_obligations": {
+      "type": "number",
+      "default": 0
+    },
+    "net_cash_flow": {
+      "type": "number",
+      "default": 0
+    },
+    "sales_channel": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "business_id",
+    "period_start"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

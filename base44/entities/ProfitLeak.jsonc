@@ -1,0 +1,92 @@
+{
+  "name": "ProfitLeak",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "business_id": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "excess_labour",
+        "supplier_price_increase",
+        "underpriced_products",
+        "overdue_invoices",
+        "unused_subscriptions",
+        "merchant_fees",
+        "duplicate_expenses",
+        "unusual_expenses",
+        "waste",
+        "poor_sales_channels",
+        "low_margin_products",
+        "excessive_discounts",
+        "unprofitable_customers",
+        "unprofitable_jobs"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "estimated_monthly_value_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "identified",
+        "approved",
+        "realised",
+        "dismissed"
+      ],
+      "default": "identified"
+    },
+    "evidence": {
+      "type": "string"
+    },
+    "recommended_action": {
+      "type": "string"
+    },
+    "detail": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "business_id",
+    "category",
+    "title"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
