@@ -1,0 +1,151 @@
+{
+  "name": "SalesLineItem",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "sales_ledger_entry_id": {
+      "type": "string"
+    },
+    "source_record_id": {
+      "type": "string"
+    },
+    "item_name": {
+      "type": "string"
+    },
+    "item_ref": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 0
+    },
+    "gross_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "discount_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "refund_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "net_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "avg_price_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "channel": {
+      "type": "string"
+    },
+    "service_type": {
+      "type": "string"
+    },
+    "business_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "week_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "estimated_food_cost_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "contribution_margin_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "costing_source": {
+      "type": "string",
+      "enum": [
+        "none",
+        "estimated",
+        "confirmed"
+      ],
+      "default": "none"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "sales_ledger_entry_id",
+    "item_name",
+    "quantity",
+    "business_date"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "name": "PlatformSettlement",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "uber_eats",
+        "doordash",
+        "menulog",
+        "other"
+      ]
+    },
+    "source_system": {
+      "type": "string"
+    },
+    "source_record_id": {
+      "type": "string"
+    },
+    "external_payout_id": {
+      "type": "string"
+    },
+    "payout_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "gross_sales_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "refunds_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "adjustments_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "commissions_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "fees_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "promotions_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "gst_collected_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "net_payout_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "matched_sales_count": {
+      "type": "number",
+      "default": 0
+    },
+    "reconciliation_status": {
+      "type": "string",
+      "enum": [
+        "unmatched",
+        "matched",
+        "partial",
+        "exception",
+        "awaiting_data"
+      ],
+      "default": "unmatched"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "confirmed",
+        "estimated",
+        "forecast",
+        "unknown"
+      ],
+      "default": "unknown"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "platform",
+    "payout_date",
+    "net_payout_cents"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

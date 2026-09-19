@@ -1,0 +1,184 @@
+{
+  "name": "SalesLedgerEntry",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "source_system": {
+      "type": "string",
+      "enum": [
+        "pos",
+        "uber_eats",
+        "doordash",
+        "direct_online",
+        "manual",
+        "other"
+      ]
+    },
+    "source_record_id": {
+      "type": "string"
+    },
+    "external_order_id": {
+      "type": "string"
+    },
+    "business_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "week_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "pos",
+        "uber_eats",
+        "doordash",
+        "direct_online",
+        "pickup",
+        "other"
+      ],
+      "default": "pos"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "dine_in",
+        "pickup",
+        "delivery",
+        "online",
+        "unknown"
+      ],
+      "default": "unknown"
+    },
+    "gross_sales_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "discounts_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "refunds_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "net_sales_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "gst_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "transaction_count": {
+      "type": "number",
+      "default": 0
+    },
+    "avg_order_value_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "reconciliation_status": {
+      "type": "string",
+      "enum": [
+        "unmatched",
+        "matched",
+        "duplicate",
+        "exception",
+        "awaiting_data"
+      ],
+      "default": "unmatched"
+    },
+    "dedup_key": {
+      "type": "string"
+    },
+    "matched_settlement_id": {
+      "type": "string"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "confirmed",
+        "estimated",
+        "forecast",
+        "unknown"
+      ],
+      "default": "unknown"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "source_system",
+    "business_date",
+    "net_sales_cents",
+    "reconciliation_status"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
