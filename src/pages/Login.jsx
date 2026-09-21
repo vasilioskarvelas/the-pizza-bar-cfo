@@ -8,6 +8,19 @@ import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 
+// Where to go after signing in: the page that sent us here (same origin only), else home.
+function returnPath() {
+  const params = new URLSearchParams(window.location.search);
+  const target = params.get("from_url") || params.get("returnTo");
+  if (!target) return "/";
+  try {
+    const url = new URL(target, window.location.origin);
+    return url.origin === window.location.origin ? url.pathname + url.search + url.hash : "/";
+  } catch {
+    return "/";
+  }
+}
+
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,7 +33,7 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = "/";
+      window.location.href = returnPath();
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -29,7 +42,7 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", "/");
+    base44.auth.loginWithProvider("google", returnPath());
   };
 
   return (
