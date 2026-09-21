@@ -16,6 +16,10 @@ import AutopilotProfitLeaks from '@/pages/autopilot/ProfitLeaks';
 import AutopilotCashFlow from '@/pages/autopilot/CashFlow';
 import AutopilotRevenue from '@/pages/autopilot/Revenue';
 import AutopilotLastWeek from '@/pages/autopilot/LastWeek';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
 import AutopilotExpenses from '@/pages/autopilot/Expenses';
 import AutopilotLabour from '@/pages/autopilot/Labour';
 import AutopilotProfitability from '@/pages/autopilot/Profitability';
@@ -119,6 +123,10 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       {/* Add your page Route elements here */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route element={<AutopilotLayout />}>
         <Route path="/" element={<AutopilotOverview />} />
         <Route path="/daily-brief" element={<AutopilotDailyBrief />} />
