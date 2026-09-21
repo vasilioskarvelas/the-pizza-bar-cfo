@@ -1,9 +1,10 @@
 import React from 'react';
 import { Outlet, NavLink, Link } from 'react-router-dom';
-import { LayoutDashboard, Sunrise, TrendingDown, Wallet, BarChart3, Receipt, Users, PieChart, Sparkles, CheckSquare, Trophy, Plug, Settings, Building2 } from 'lucide-react';
+import { LayoutDashboard, Sunrise, TrendingDown, Wallet, BarChart3, Receipt, Users, PieChart, Sparkles, CheckSquare, Trophy, Plug, Settings, Building2, CalendarDays } from 'lucide-react';
 
 const NAV = [
   { to: '/', label: 'Overview', icon: LayoutDashboard, end: true },
+  { to: '/last-week', label: 'Last Week', icon: CalendarDays },
   { to: '/daily-brief', label: 'Daily Brief', icon: Sunrise },
   { to: '/profit-leaks', label: 'Profit Leaks', icon: TrendingDown },
   { to: '/cash-flow', label: 'Cash Flow', icon: Wallet },
