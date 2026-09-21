@@ -15,6 +15,7 @@ import AutopilotDailyBrief from '@/pages/autopilot/DailyBrief';
 import AutopilotProfitLeaks from '@/pages/autopilot/ProfitLeaks';
 import AutopilotCashFlow from '@/pages/autopilot/CashFlow';
 import AutopilotRevenue from '@/pages/autopilot/Revenue';
+import AutopilotLastWeek from '@/pages/autopilot/LastWeek';
 import AutopilotExpenses from '@/pages/autopilot/Expenses';
 import AutopilotLabour from '@/pages/autopilot/Labour';
 import AutopilotProfitability from '@/pages/autopilot/Profitability';
@@ -123,6 +124,7 @@ const AuthenticatedApp = () => {
         <Route path="/daily-brief" element={<AutopilotDailyBrief />} />
         <Route path="/profit-leaks" element={<AutopilotProfitLeaks />} />
         <Route path="/cash-flow" element={<AutopilotCashFlow />} />
+        <Route path="/last-week" element={<AutopilotLastWeek />} />
         <Route path="/revenue" element={<AutopilotRevenue />} />
         <Route path="/expenses" element={<AutopilotExpenses />} />
         <Route path="/labour" element={<AutopilotLabour />} />
