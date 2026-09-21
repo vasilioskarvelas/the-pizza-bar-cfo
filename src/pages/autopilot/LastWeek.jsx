@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { formatAUD } from '@/lib/autopilotEngine';
 import { useAccess, isPlatformAdmin } from '@/lib/accessService';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
-import { UploadCloud, Loader2, AlertTriangle, TrendingUp, Info, CheckCircle2 } from 'lucide-react';
+import { UploadCloud, Loader2, AlertTriangle, TrendingUp, Info, CheckCircle2, LogIn } from 'lucide-react';
 
 // Weekly performance per shop, fed by the KPI spreadsheet (importKpiSheet → WeeklyChannelKPI).
 
@@ -18,17 +18,27 @@ export default function LastWeek() {
   const [data, setData] = useState(null);
   const [week, setWeek] = useState('');
   const [error, setError] = useState(null);
+  const [needsLogin, setNeedsLogin] = useState(false);
 
   const load = useCallback(async (weekEnding) => {
     setError(null);
     try {
+      if (!(await base44.auth.isAuthenticated().catch(() => false))) {
+        setNeedsLogin(true);
+        setData({ sites: [], weeks_available: [] });
+        return;
+      }
       const res = await base44.functions.invoke('getWeeklyPerformance', weekEnding ? { week_ending: weekEnding } : {});
       const d = res.data || res;
       if (d.error) throw new Error(d.error);
       setData(d);
       setWeek(d.week_ending || '');
     } catch (e) {
-      setError(e?.response?.data?.error || e.message || 'Could not load weekly performance');
+      const status = e?.response?.status || e?.status;
+      if (status === 401) { setNeedsLogin(true); setData((prev) => prev || { sites: [], weeks_available: [] }); return; }
+      setError(status === 403
+        ? 'Your login isn\'t linked to the Pizza Bar organisation yet, so there\'s nothing to show.'
+        : (e?.response?.data?.error || e.message || 'Could not load weekly performance'));
       setData((prev) => prev || { sites: [], weeks_available: [] });
     }
   }, []);
@@ -39,20 +49,33 @@ export default function LastWeek() {
     return <div className="p-8 flex items-center justify-center min-h-[60vh]"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>;
   }
 
+  if (needsLogin) {
+    return (
+      <div className="p-4 md:p-8 max-w-md mx-auto min-h-[60vh] flex flex-col items-center justify-center text-center gap-4">
+        <h1 className="text-2xl font-semibold text-slate-900">Sign in to see your numbers</h1>
+        <p className="text-slate-500 text-sm">Weekly sales figures are private to your business, so you need to be signed in.</p>
+        <button type="button" onClick={() => base44.auth.redirectToLogin(window.location.href)}
+          className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 text-white font-medium">
+          <LogIn className="w-4 h-4" /> Sign in
+        </button>
+      </div>
+    );
+  }
+
   const empty = !data.sites?.length;
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto space-y-4 md:space-y-6">
+      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 md:gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-slate-900">Last Week</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold text-slate-900">Last Week</h1>
           <p className="text-slate-500 mt-1">
             {empty ? 'Weekly sales by shop and channel, from your KPI sheet.' : `Week ending ${fmtDate(data.week_ending)} · Monday to Sunday`}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           {!!data.weeks_available?.length && (
-            <select value={week} onChange={(e) => load(e.target.value)} className="h-9 rounded-md border border-slate-300 bg-white px-2 text-sm" aria-label="Week ending">
+            <select value={week} onChange={(e) => load(e.target.value)} className="h-11 md:h-9 w-full sm:w-auto rounded-lg md:rounded-md border border-slate-300 bg-white px-3 md:px-2 text-base md:text-sm" aria-label="Week ending">
               {data.weeks_available.map((w) => <option key={w} value={w}>Week ending {fmtDate(w)}</option>)}
             </select>
           )}
@@ -67,9 +90,9 @@ export default function LastWeek() {
 
       {!empty && (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Stat label="Both shops · sales" value={whole(data.combined.gross)} sub={<span className={pctClass(data.combined.vs_prev_pct)}>{pct(data.combined.vs_prev_pct)} vs prior week</span>} />
-            <Stat label="Both shops · after commission" value={whole(data.combined.net)} sub={`${data.combined.gross ? Math.round((data.combined.net / data.combined.gross) * 100) : 0}% kept`} />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+            <Stat label="Both shops" value={whole(data.combined.gross)} sub={<span className={pctClass(data.combined.vs_prev_pct)}>{pct(data.combined.vs_prev_pct)} vs prior week</span>} />
+            <Stat label="You keep" value={whole(data.combined.net)} sub={`${data.combined.gross ? Math.round((data.combined.net / data.combined.gross) * 100) : 0}% kept`} />
             <Stat label="Orders" value={data.combined.orders.toLocaleString('en-AU')} />
             <Stat label="Average order" value={formatAUD(data.combined.aov, true)} />
           </div>
@@ -94,14 +117,14 @@ function SiteCard({ site }) {
   const trendData = site.trend.map((p) => ({ week: fmtDate(p.week_ending).replace(/ \d{4}$/, ''), Sales: Math.round(p.gross / 100), 'After commission': Math.round(p.net / 100) }));
 
   return (
-    <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-5">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
+    <section className="bg-white rounded-xl border border-slate-200 p-4 md:p-5 space-y-4 md:space-y-5">
+      <div className="space-y-2">
         <h2 className="text-lg font-semibold text-slate-900">{site.site_name}</h2>
-        <p className="text-sm text-slate-500">
-          <span className="font-semibold text-slate-900">{whole(t.gross)}</span> sales ·{' '}
-          <span className={pctClass(site.vs_prev_pct)}>{pct(site.vs_prev_pct)}</span> vs prior week ·{' '}
-          <span className={pctClass(site.vs_avg4_pct)}>{pct(site.vs_avg4_pct)}</span> vs 4-week avg
-        </p>
+        <div className="grid grid-cols-3 gap-2 md:flex md:gap-6">
+          <Mini label="Sales" value={whole(t.gross)} />
+          <Mini label="vs prior week" value={pct(site.vs_prev_pct)} cls={pctClass(site.vs_prev_pct)} />
+          <Mini label="vs 4-wk avg" value={pct(site.vs_avg4_pct)} cls={pctClass(site.vs_avg4_pct)} />
+        </div>
       </div>
 
       {!!site.flags.length && (
@@ -110,7 +133,28 @@ function SiteCard({ site }) {
         </ul>
       )}
 
-      <div className="overflow-x-auto">
+      <ul className="md:hidden divide-y divide-slate-100 -mx-1">
+        {site.channels.map((c) => (
+          <li key={c.channel} className="px-1 py-3">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="font-medium text-slate-900">{c.label}</span>
+              <span className="font-semibold tabular-nums text-slate-900">{c.missing ? <span className="text-xs font-normal text-amber-600">not entered</span> : formatAUD(c.gross, true)}</span>
+            </div>
+            {!c.missing && (
+              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-slate-500">
+                {!!c.commission && <span>Keep {formatAUD(c.net, true)} ({Math.round((c.keep_pct || 0) * 100)}%)</span>}
+                {!!c.orders && <span>{c.orders} orders · {formatAUD(c.aov, true)} avg</span>}
+                <span className={pctClass(c.vs_avg4_pct)}>{pct(c.vs_avg4_pct)} vs 4-wk</span>
+              </div>
+            )}
+          </li>
+        ))}
+        <li className="px-1 pt-3 flex items-baseline justify-between font-semibold text-slate-900">
+          <span>Total · you keep</span><span className="tabular-nums">{formatAUD(t.net, true)}</span>
+        </li>
+      </ul>
+
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs text-slate-500 border-b border-slate-200">
@@ -154,7 +198,7 @@ function SiteCard({ site }) {
       {trendData.length > 1 && (
         <div>
           <h3 className="text-sm font-medium text-slate-700 mb-2">Last {trendData.length} weeks</h3>
-          <ResponsiveContainer width="100%" height={220}>
+          <ResponsiveContainer width="100%" height={200}>
             <LineChart data={trendData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="week" tick={{ fontSize: 11 }} stroke="#94a3b8" />
@@ -168,6 +212,15 @@ function SiteCard({ site }) {
         </div>
       )}
     </section>
+  );
+}
+
+function Mini({ label, value, cls = 'text-slate-900' }) {
+  return (
+    <div className="rounded-lg bg-slate-50 md:bg-transparent px-2 py-1.5 md:p-0">
+      <p className="text-[11px] text-slate-500">{label}</p>
+      <p className={`text-base font-semibold tabular-nums ${cls}`}>{value}</p>
+    </div>
   );
 }
 
@@ -185,9 +238,9 @@ function Flag({ flag }) {
 
 function Stat({ label, value, sub }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-4">
+    <div className="bg-white rounded-xl border border-slate-200 p-3 md:p-4">
       <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-xl font-semibold text-slate-900 mt-1">{value ?? '—'}</p>
+      <p className="text-lg md:text-xl font-semibold text-slate-900 mt-1 tabular-nums">{value ?? '—'}</p>
       {sub && <p className="text-xs mt-1 text-slate-500">{sub}</p>}
     </div>
   );
@@ -224,13 +277,13 @@ function KpiSheetUpload({ onImported }) {
   return (
     <div className="relative">
       <button type="button" onClick={() => input.current?.click()} disabled={busy}
-        className="h-9 inline-flex items-center gap-2 rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60">
+        className="h-11 md:h-9 w-full sm:w-auto justify-center inline-flex items-center gap-2 rounded-lg md:rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60">
         {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
         {busy ? 'Importing…' : 'Update from KPI sheet'}
       </button>
       <input ref={input} type="file" accept=".xlsx,.xlsm,.xls" className="hidden" onChange={(e) => handle(e.target.files?.[0])} />
       {result && (
-        <div className={`absolute right-0 mt-2 w-80 z-10 rounded-md border p-3 text-xs shadow-sm ${result.ok ? 'bg-white border-emerald-200' : 'bg-white border-rose-200'}`}>
+        <div className={`sm:absolute right-0 mt-2 w-full sm:w-80 z-10 rounded-md border p-3 text-xs shadow-sm ${result.ok ? 'bg-white border-emerald-200' : 'bg-white border-rose-200'}`}>
           <p className={`flex items-center gap-1.5 font-medium ${result.ok ? 'text-emerald-700' : 'text-rose-700'}`}>
             {result.ok ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}{result.text}
           </p>
