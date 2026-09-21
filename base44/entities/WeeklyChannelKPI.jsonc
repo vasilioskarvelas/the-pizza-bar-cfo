@@ -1,0 +1,144 @@
+{
+  "name": "WeeklyChannelKPI",
+  "type": "object",
+  "properties": {
+    "organisation_id": {
+      "type": "string"
+    },
+    "site_id": {
+      "type": "string"
+    },
+    "week_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Monday"
+    },
+    "week_ending": {
+      "type": "string",
+      "format": "date",
+      "description": "Sunday"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "bite",
+        "phone_pickup",
+        "tables",
+        "doordash",
+        "uber_eats",
+        "menulog",
+        "hungry_hungry"
+      ]
+    },
+    "gross_sales_cents": {
+      "type": "number",
+      "default": 0
+    },
+    "commission_cents": {
+      "type": "number",
+      "default": 0,
+      "description": "Platform commission, fees and marketing (total made minus total paid)"
+    },
+    "net_sales_cents": {
+      "type": "number",
+      "default": 0,
+      "description": "gross_sales_cents - commission_cents"
+    },
+    "order_count": {
+      "type": "number",
+      "default": 0
+    },
+    "has_order_count": {
+      "type": "boolean",
+      "default": false,
+      "description": "false when the sheet had no count for this week/channel (unknown, not zero)"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "kpi_sheet"
+      ],
+      "default": "kpi_sheet"
+    },
+    "source_ref": {
+      "type": "string",
+      "description": "Sheet tab and row, e.g. 'KPI STRATHMORE!R199'"
+    },
+    "import_ref": {
+      "type": "string",
+      "description": "Import run that last wrote this record"
+    },
+    "dedup_key": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "organisation_id",
+    "site_id",
+    "week_ending",
+    "channel",
+    "dedup_key"
+  ],
+  "rls": {
+    "read": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "$or": [
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            },
+            {
+              "data.site_id": null
+            },
+            {
+              "data.site_id": {
+                "$in": "{{user.data.site_ids}}"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "create": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$and": [
+        {
+          "data.organisation_id": "{{user.data.organisation_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}
